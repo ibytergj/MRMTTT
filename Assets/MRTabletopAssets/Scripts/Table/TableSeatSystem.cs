@@ -50,20 +50,42 @@ public class TableSeatSystem : MonoBehaviour
 
     float GetRotationAngleBasedOnSeatNum(int seatNum)
     {
-        float angle = 0;
-        switch (seatNum)
+        int totalSeats = m_TableTop.seats.Length;
+        int activePlayers = GetActivePlayerCount();
+
+        if (activePlayers <= 4)
         {
-            case 1:
-                angle = 180;
-                break;
-            case 2:
-                angle = 270;
-                break;
-            case 3:
-                angle = 90;
-                break;
+            // Original 4-player layout with non-sequential numbering
+            switch (seatNum)
+            {
+                case 0: return 0f;      // First position
+                case 1: return 180f;    // Opposite position
+                case 2: return 270f;    // Left position
+                case 3: return 90f;     // Right position
+                default: return 0f;
+            }
         }
-        return angle;
+        else
+        {
+            // Sequential clockwise numbering for 5-8 players
+            float anglePerSeat = 360f / activePlayers;
+            return seatNum * anglePerSeat;
+        }
+    }
+
+    /// <summary>
+    /// Gets the number of active players based on active seat transforms.
+    /// </summary>
+    private int GetActivePlayerCount()
+    {
+        // Count active seats or get from configuration
+        int count = 0;
+        foreach (var seat in m_TableTop.seats)
+        {
+            if (seat.seatTransform.gameObject.activeSelf)
+                count++;
+        }
+        return Mathf.Max(2, count); // Ensure at least 2 players
     }
 
     public void ResetSeatRotation()

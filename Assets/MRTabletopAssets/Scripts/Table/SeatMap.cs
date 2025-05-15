@@ -2,6 +2,7 @@ using UnityEngine.UI;
 using Unity.Netcode;
 using UnityEngine;
 using XRMultiplayer;
+using MRTabletopAssets;
 
 public class SeatMap : MonoBehaviour
 {
@@ -54,15 +55,32 @@ public class SeatMap : MonoBehaviour
 
     void UpdateAllSeats()
     {
+        int activePlayers = Mathf.Min(8, m_TableTopManager.networkedSeats.Count);
+
         for (int i = 0; i < m_TableTopManager.networkedSeats.Count; i++)
         {
-            m_SeatImages[i].color = GetColorForSeat(i, m_TableTopManager.networkedSeats[i].isOccupied);
+            // Get logical player index for UI display
+            int logicalIndex = m_TableTopManager.tableTop.GetLogicalPlayerIndex(i, activePlayers);
+
+            m_SeatImages[i].color = GetColorForSeat(logicalIndex, m_TableTopManager.networkedSeats[i].isOccupied);
             m_SeatButtons[i].interactable = !m_TableTopManager.networkedSeats[i].isOccupied;
         }
     }
 
     Color GetColorForSeat(int seatIndex, bool isOccupied)
     {
-        return new Color(m_SeatColors[seatIndex].r, m_SeatColors[seatIndex].g, m_SeatColors[seatIndex].b, isOccupied ? m_FilledSeatAlpha : m_EmptySeatAlpha);
+        Color baseColor;
+
+        // Use PlayerColorManager if available, otherwise use local colors
+        if (PlayerColorManager.Instance != null)
+        {
+            baseColor = PlayerColorManager.Instance.GetPlayerColor(seatIndex);
+        }
+        else
+        {
+            baseColor = m_SeatColors[seatIndex];
+        }
+
+        return new Color(baseColor.r, baseColor.g, baseColor.b, isOccupied ? m_FilledSeatAlpha : m_EmptySeatAlpha);
     }
 }

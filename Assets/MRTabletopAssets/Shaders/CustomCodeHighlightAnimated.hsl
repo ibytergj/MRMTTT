@@ -1,0 +1,137 @@
+// This is the content for the "Body" field of the Custom Function node.
+// Assumes BlendWidth is a float input to the Custom Function node.
+
+{
+	float4 initialPlayerColors[8];
+	initialPlayerColors[0] = C1; initialPlayerColors[1] = C2;
+	initialPlayerColors[2] = C3; initialPlayerColors[3] = C4;
+	initialPlayerColors[4] = C5; initialPlayerColors[5] = C6;
+	initialPlayerColors[6] = C7; initialPlayerColors[7] = C8;
+
+	float4 colorsForBlending[8];
+	float effectiveAngleForLogic;
+	int numSides = (int)Sides;
+
+	for(int i=0; i<8; ++i) { colorsForBlending[i] = initialPlayerColors[0]; } // Default fallback
+
+	if (abs(Sides - 4.0) < 0.01) // Special case for 4 players
+	{
+	    // This is the color order that you said "blue, purple, orange, yellow" CCW from blue (P1) at bottom
+	    // P1 (Blue) at Bottom
+	    // P4 (Purple) at Right (next CCW)
+	    // P2 (Orange) at Top (next CCW)
+	    // P3 (Yellow) at Left (next CCW)
+	    colorsForBlending[0] = initialPlayerColors[0]; // P1 
+	    colorsForBlending[1] = initialPlayerColors[3]; // P4 
+	    colorsForBlending[2] = initialPlayerColors[1]; // P2
+	    colorsForBlending[3] = initialPlayerColors[2]; // P3
+    
+	    effectiveAngleForLogic = NormAngle; // Your successful finding for 4-player angle
+	}
+	else // For 3, 5, 6, 7, 8 players
+	{
+	    // Players C1, C2, C3... 
+	    for (int i = 0; i < numSides; ++i) {
+	        if (i < 8) colorsForBlending[i] = initialPlayerColors[i];
+	    }
+	    if (numSides > 0 && numSides < 8) { // Fill unused slots for safety
+	         for (int i = numSides; i < 8; ++i) {
+	            colorsForBlending[i] = initialPlayerColors[0]; 
+	        }
+	    }
+    
+	    // REVISED ANGLE LOGIC for N-players (Sides != 4):
+	    // Aim: If C1 is currently at Right, and order is CCW, this angle makes Right=0 and proceeds CCW.
+	    effectiveAngleForLogic = NormAngle; 
+	    effectiveAngleForLogic = frac(effectiveAngleForLogic + 1.0); 
+	}
+
+	if (numSides <= 0) {
+	    OutColor = C1; 
+	    OutColor.a = 1.0;
+	    return;
+	}
+
+	float scaledAngle = effectiveAngleForLogic * numSides;
+
+	int colorBaseIndex = (int)floor(scaledAngle);
+	float segmentLerpFactor = frac(scaledAngle);
+
+	float halfBlendWidth = BlendWidth * 0.5;
+	halfBlendWidth = max(halfBlendWidth, 0.0001); 
+	float sharpenedFactor = smoothstep(0.5 - halfBlendWidth, 0.5 + halfBlendWidth, segmentLerpFactor);
+
+	int actualIndex1 = (colorBaseIndex % numSides + numSides) % numSides; 
+	int actualIndex2 = ((colorBaseIndex + 1) % numSides + numSides) % numSides; 
+
+	int maxValidIndex = min(numSides - 1, 7);
+	actualIndex1 = clamp(actualIndex1, 0, maxValidIndex);
+	actualIndex2 = clamp(actualIndex2, 0, maxValidIndex);
+
+	OutColor = lerp(colorsForBlending[actualIndex1], colorsForBlending[actualIndex2], sharpenedFactor);
+
+	// ====== Precise Active Player Highlight Logic ======
+
+	bool isActiveSegment = false;
+
+          // Correct Offset Logic for all player counts
+          float highlightOffset = 1.0 / Sides;
+          effectiveAngleForLogic = frac(NormAngle - (0.5 / Sides) + highlightOffset);
+
+	if (ActivePlayerIdx >= 0 && ActivePlayerIdx < numSides)
+	{
+		int mappedIndex = ActivePlayerIdx;
+
+
+		// Custom player position mapping for 4-player game:
+		if (abs(Sides - 4.0) < 0.01)
+		{
+		    if (ActivePlayerIdx == 0) mappedIndex = 0;  // P1 bottom
+		    else if (ActivePlayerIdx == 1) mappedIndex = 2;  // P2 top
+		    else if (ActivePlayerIdx == 2) mappedIndex = 3;  // P3 right
+		    else if (ActivePlayerIdx == 3) mappedIndex = 1;  // P4 left
+		}
+
+		// Precise angular check (corrected):
+		float angle = frac(effectiveAngleForLogic);
+		float segmentStart = (mappedIndex / (float)numSides);
+		float segmentEnd = ((mappedIndex + 1) / (float)numSides);
+
+		if (segmentStart < segmentEnd)
+		    isActiveSegment = (angle >= segmentStart && angle < segmentEnd);
+		else  // wrap-around segment (like player 1)
+		    isActiveSegment = (angle >= segmentStart || angle < segmentEnd);
+	}
+
+	if (isActiveSegment)
+	{
+		float correctedSLF = frac(segmentLerpFactor - 0.5);
+
+		if (HighlightMode < 0.5)
+		{
+		    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 1.5);
+		}
+		else if (HighlightMode < 1.5)
+		{
+		    float pattern = step(0.6, frac(correctedSLF * 15.0));
+		    OutColor = lerp(OutColor, GlowColor, pattern * PatternIntensity * 1.5);
+		}
+		else if (HighlightMode < 2.5)
+		{
+		    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); 
+		    float animatedPattern = step(0.6, frac(correctedSLF * 15.0 + animOffset * 15.0));
+		    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 1.5);
+		}
+		else
+		{
+		    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 0.7); 
+    
+		    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); 
+		    float animatedPattern = step(0.7, frac(correctedSLF * 12.0 + animOffset * 12.0));
+		    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 0.8);
+    
+		    float pulse = 0.5 + 0.5 * sin(_Time.y * max(0.2, AnimationSpeed) * 2.0);
+		    OutColor.rgb *= 1.0 + (BrightnessPulseIntensity * pulse);
+		}
+	}
+}

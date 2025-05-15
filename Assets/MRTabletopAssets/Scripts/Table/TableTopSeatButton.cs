@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using XRMultiplayer;
+using MRTabletopAssets;
 
 public class TableTopSeatButton : MonoBehaviour
 {
@@ -43,7 +44,7 @@ public class TableTopSeatButton : MonoBehaviour
     [SerializeField]
     bool m_IsSpectator = false;
 
-    [SerializeField, Range(0, 3)]
+    [SerializeField, Range(0, 7)]
     int m_SeatID;
 
     [SerializeField]
@@ -74,8 +75,17 @@ public class TableTopSeatButton : MonoBehaviour
         if (!m_IsSpectator)
         {
             m_SeatID = Mathf.Clamp(m_SeatID, 0, m_SeatColors.Length - 1);
-            foreach (var icon in m_SeatImages)
-                icon.color = m_SeatColors[m_SeatID];
+
+            // Use PlayerColorManager if available, otherwise use local colors
+            if (Application.isPlaying && PlayerColorManager.Instance != null)
+            {
+                UpdateSeatButtonColors();
+            }
+            else
+            {
+                foreach (var icon in m_SeatImages)
+                    icon.color = m_SeatColors[m_SeatID];
+            }
 
             m_SeatNumberText.text = (m_SeatID + 1).ToString();
             m_SeatNameText.text = "Seat " + (m_SeatID + 1);
@@ -89,10 +99,63 @@ public class TableTopSeatButton : MonoBehaviour
         SetOccupied(m_IsOccupied);
     }
 
+    /// <summary>
+    /// Updates the seat button colors based on the PlayerColorManager.
+    /// </summary>
+    private void UpdateSeatButtonColors()
+    {
+        if (PlayerColorManager.Instance != null)
+        {
+            Color seatColor = PlayerColorManager.Instance.GetPlayerColor(m_SeatID);
+            foreach (var icon in m_SeatImages)
+                icon.color = seatColor;
+        }
+    }
+
+    private void Start()
+    {
+        // Initialize seat button colors
+        UpdateSeatButtonColors();
+    }
+
+    private void OnEnable()
+    {
+        // Subscribe to PlayerColorManager events
+        if (PlayerColorManager.Instance != null)
+        {
+            PlayerColorManager.Instance.OnSeatColorChanged += HandleSeatColorChanged;
+            PlayerColorManager.Instance.OnColorPaletteChanged += HandleColorPaletteChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Unsubscribe from PlayerColorManager events
+        if (PlayerColorManager.Instance != null)
+        {
+            PlayerColorManager.Instance.OnSeatColorChanged -= HandleSeatColorChanged;
+            PlayerColorManager.Instance.OnColorPaletteChanged -= HandleColorPaletteChanged;
+        }
+    }
+
     void Update()
     {
         if (m_PlayerInSeat != null)
             m_VoiceChatFillImage.fillAmount = m_PlayerInSeat.playerVoiceAmp;
+    }
+
+    // Event handlers for PlayerColorManager events
+    private void HandleSeatColorChanged(int seatIndex, Color newColor)
+    {
+        if (seatIndex == m_SeatID)
+        {
+            UpdateSeatButtonColors();
+        }
+    }
+
+    private void HandleColorPaletteChanged()
+    {
+        UpdateSeatButtonColors();
     }
 
     public void SetPlayerName(string name)
@@ -131,8 +194,39 @@ public class TableTopSeatButton : MonoBehaviour
             m_HideAvatarToggle.SetIsOnWithoutNotify(!playerColocation.isShowingAvatar);
         }
 
-        if (m_PlayerInSeat.IsLocalPlayer)
-            XRINetworkGameManager.LocalPlayerColor.Value = m_SeatColors[m_SeatID];
+        // Handle player color assignment with PlayerColorManager
+        if (PlayerColorManager.Instance != null)
+        {
+            // Check if this is a seat swap
+            bool isSeatSwap = PlayerColorManager.Instance.HasRegisteredColor(player.OwnerClientId);
+
+            if (isSeatSwap)
+            {
+                // For seat swaps, maintain the player's existing color
+                PlayerColorManager.Instance.UpdatePlayerSeat(player.OwnerClientId, m_SeatID);
+            }
+            else
+            {
+                // For new players, try to use their preferred color
+                Color preferredColor = player.playerColor;
+                Color assignedColor = PlayerColorManager.Instance.RegisterPlayerColor(
+                    player.OwnerClientId, preferredColor, m_SeatID);
+
+                // Update the local player color
+                if (player.IsLocalPlayer)
+                {
+                    XRINetworkGameManager.LocalPlayerColor.Value = assignedColor;
+                }
+            }
+        }
+        else
+        {
+            // Fallback to old behavior if PlayerColorManager is not available
+            if (m_PlayerInSeat.IsLocalPlayer)
+            {
+                XRINetworkGameManager.LocalPlayerColor.Value = m_SeatColors[m_SeatID];
+            }
+        }
 
         SetLocalPlayer(m_PlayerInSeat.IsLocalPlayer, false);
         SetOccupied(true);
@@ -145,6 +239,13 @@ public class TableTopSeatButton : MonoBehaviour
             Debug.LogWarning("Trying to remove player from seat but no player is assigned to this seat.");
             return;
         }
+
+        // Unregister player color from PlayerColorManager
+        if (PlayerColorManager.Instance != null)
+        {
+            PlayerColorManager.Instance.UnregisterPlayerColor(m_PlayerInSeat.OwnerClientId);
+        }
+
         m_PlayerInSeat.onNameUpdated -= SetPlayerName;
         m_PlayerInSeat.selfMuted.OnValueChanged -= UpdateSelfMutedState;
         m_PlayerInSeat.squelched.Unsubscribe(UpdateSquelchedState);

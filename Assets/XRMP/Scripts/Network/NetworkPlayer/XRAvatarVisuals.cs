@@ -92,7 +92,30 @@ namespace XRMultiplayer
 
         public virtual void SetPlayerColor(Color newColor)
         {
-            m_headRend.materials[2].SetColor("_BaseColor", newColor);
+            if (m_headRend != null)
+            {
+                // Get a copy of the materials array
+                Material[] materials = m_headRend.materials;
+
+                if (materials.Length > 2)
+                {
+                    // Update the shirt material (index 2)
+                    materials[2].SetColor("_BaseColor", newColor);
+
+                    // Apply the updated materials back to the renderer
+                    m_headRend.materials = materials;
+
+                    Debug.Log($"XRAvatarVisuals.SetPlayerColor updated shirt color to: {ColorUtility.ToHtmlStringRGB(newColor)}");
+                }
+                else
+                {
+                    Debug.LogWarning($"XRAvatarVisuals.SetPlayerColor failed: Not enough materials ({materials.Length})");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("XRAvatarVisuals.SetPlayerColor failed: m_headRend is null");
+            }
         }
     }
 }

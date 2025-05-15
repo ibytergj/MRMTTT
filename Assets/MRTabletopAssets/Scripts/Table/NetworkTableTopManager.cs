@@ -2,6 +2,7 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using XRMultiplayer;
+using MRTabletopAssets;
 
 public class NetworkTableTopManager : NetworkBehaviour
 {
@@ -12,6 +13,8 @@ public class NetworkTableTopManager : NetworkBehaviour
 
     [SerializeField]
     TableTop m_TableTop;
+
+    public TableTop tableTop => m_TableTop;
 
     [SerializeField]
     TableTopSeatButton[] m_SeatButtons;
@@ -32,6 +35,16 @@ public class NetworkTableTopManager : NetworkBehaviour
             {
                 networkedSeats.Add(new NetworkedSeat { isOccupied = false, playerID = 0 });
             }
+
+            // Initialize seat positions based on active player count
+            // Start with 4 seats by default
+            int seatsToShow = 4;
+
+            // For now, we'll just use the default 4-player layout
+            // In a real implementation, you would determine the actual player count
+
+            Debug.Log($"NetworkTableTopManager initializing {seatsToShow} seats");
+            m_TableTop.UpdateSeatPositions(seatsToShow);
         }
 
         UpdateNetworkedSeatsVisuals();
@@ -76,6 +89,90 @@ public class NetworkTableTopManager : NetworkBehaviour
 
             UpdateNetworkedSeatsVisuals();
         }
+
+        // Update seat positions based on new player count
+        UpdateSeatPositionsBasedOnPlayerCount();
+    }
+
+    /// <summary>
+    /// Updates the seat positions based on the current number of active players.
+    /// </summary>
+    private void UpdateSeatPositionsBasedOnPlayerCount()
+    {
+        if (IsServer && m_TableTop != null)
+        {
+            int occupiedSeatCount = CountOccupiedSeats();
+
+            // Determine how many seats to show based on occupied seats
+            int seatsToShow;
+
+            if (occupiedSeatCount <= 4)
+            {
+                // For 1-4 players, use the standard 4-player layout
+                seatsToShow = 4;
+            }
+            else
+            {
+                // For 5-8 players, use the exact number of players
+                // This creates a pentagon for 5, hexagon for 6, etc.
+                seatsToShow = occupiedSeatCount;
+                seatsToShow = Mathf.Min(8, seatsToShow); // Cap at 8 players
+            }
+
+            Debug.Log($"Updating seat positions for {seatsToShow} seats (occupied seats: {occupiedSeatCount})");
+            m_TableTop.UpdateSeatPositions(seatsToShow);
+
+            // Update VirtualSurfaceColorShaderUpdater components with new player count
+            UpdateShaderComponents(seatsToShow);
+
+            // Update active player index in PlayerColorManager if available
+            if (MRTabletopAssets.PlayerColorManager.Instance != null)
+            {
+                // Set active player to -1 (no active player) or to the first occupied seat
+                int activePlayerIndex = -1;
+                for (int i = 0; i < networkedSeats.Count; i++)
+                {
+                    if (networkedSeats[i].isOccupied)
+                    {
+                        activePlayerIndex = i;
+                        break;
+                    }
+                }
+
+                MRTabletopAssets.PlayerColorManager.Instance.ActivePlayerIndex = activePlayerIndex;
+
+                // Trigger color palette changed event to update all UI elements
+                MRTabletopAssets.PlayerColorManager.Instance.NotifyColorPaletteChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates all VirtualSurfaceColorShaderUpdater components with the new player count.
+    /// </summary>
+    private void UpdateShaderComponents(int playerCount)
+    {
+        // Find all VirtualSurfaceColorShaderUpdater components in the scene
+        VirtualSurfaceColorShaderUpdater[] shaderUpdaters = FindObjectsByType<VirtualSurfaceColorShaderUpdater>(FindObjectsSortMode.None);
+
+        foreach (var updater in shaderUpdaters)
+        {
+            updater.UpdatePlayerCount(playerCount);
+        }
+    }
+
+    /// <summary>
+    /// Counts how many seats are currently occupied.
+    /// </summary>
+    private int CountOccupiedSeats()
+    {
+        int count = 0;
+        foreach (var seat in networkedSeats)
+        {
+            if (seat.isOccupied)
+                count++;
+        }
+        return count;
     }
 
     void UpdateNetworkedSeatsVisuals()
@@ -107,7 +204,19 @@ public class NetworkTableTopManager : NetworkBehaviour
 
     public void RequestSeat(int newSeatChoice)
     {
-        RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat, newSeatChoice);
+        int activePlayers = GetActivePlayerCount();
+        // Convert logical seat choice to physical if needed
+        int physicalSeatChoice = m_TableTop.GetPhysicalSeatIndex(newSeatChoice, activePlayers);
+        RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat, physicalSeatChoice);
+    }
+
+    /// <summary>
+    /// Gets the number of active players based on occupied seats.
+    /// </summary>
+    private int GetActivePlayerCount()
+    {
+        int occupiedSeats = CountOccupiedSeats();
+        return Mathf.Min(8, occupiedSeats);
     }
 
     [Rpc(SendTo.Server)]
@@ -154,6 +263,9 @@ public class NetworkTableTopManager : NetworkBehaviour
         }
 
         UpdateNetworkedSeatsVisuals();
+
+        // Update seat positions when a player joins
+        UpdateSeatPositionsBasedOnPlayerCount();
 
         AssignSeatRpc(newSeatID, localPlayerID);
     }
