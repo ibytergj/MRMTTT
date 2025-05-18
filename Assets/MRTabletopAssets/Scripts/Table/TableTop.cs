@@ -4,6 +4,9 @@ using MRTabletopAssets;
 
 public class TableTop : MonoBehaviour
 {
+    // Debug prefix for logging
+    private const string DEBUG_TAG = "[TableTop] ";
+
     public static int k_CurrentSeat = -1;
 
     [SerializeField]
@@ -67,22 +70,52 @@ public class TableTop : MonoBehaviour
     /// <param name="playerCount">Number of active players (2-8)</param>
     public void UpdateSeatPositions(int playerCount)
     {
-        playerCount = Mathf.Clamp(playerCount, 2, 8);
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Original playerCount: {playerCount}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
-        Debug.Log($"Updating seat positions for {playerCount} players");
+        playerCount = Mathf.Clamp(playerCount, 2, 8);
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Clamped playerCount: {playerCount}");
+
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Total seat count: {m_Seats.Length}");
+
+        // Log current seat states before changes
+        for (int i = 0; i < m_Seats.Length; i++)
+        {
+            if (m_Seats[i].seatTransform != null && m_Seats[i].seatTransform.gameObject != null)
+            {
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Before: Seat {i} active: {m_Seats[i].seatTransform.gameObject.activeSelf}, " +
+                          $"position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
+            }
+            else
+            {
+                Debug.LogWarning($"{DEBUG_TAG}UpdateSeatPositions - Seat {i} has null transform or gameObject!");
+            }
+        }
 
         if (playerCount <= 4)
         {
             // Use existing layout for 4 or fewer players
+            Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Using standard layout for {playerCount} players");
             PositionSeatsForFourOrLess(playerCount);
         }
         else
         {
             // Use sequential layout for 5-8 players
+            Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Using sequential layout for {playerCount} players");
             PositionSeatsSequentially(playerCount);
         }
 
+        // Log seat states after changes
+        for (int i = 0; i < m_Seats.Length; i++)
+        {
+            if (m_Seats[i].seatTransform != null && m_Seats[i].seatTransform.gameObject != null)
+            {
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - After: Seat {i} active: {m_Seats[i].seatTransform.gameObject.activeSelf}, " +
+                          $"position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
+            }
+        }
+
         // Update the player count in shader components
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Updating player count in shader components to {playerCount}");
         UpdatePlayerCount(playerCount);
     }
 
@@ -91,49 +124,66 @@ public class TableTop : MonoBehaviour
     /// </summary>
     private void PositionSeatsForFourOrLess(int playerCount)
     {
+        Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Setting up {playerCount} seats in standard layout");
+
         // Activate/deactivate seats as needed
         for (int i = 0; i < m_Seats.Length; i++)
         {
             bool isActive = i < playerCount;
             if (m_Seats[i].seatTransform.gameObject != null)
+            {
+                Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Setting seat {i} active: {isActive}");
                 m_Seats[i].seatTransform.gameObject.SetActive(isActive);
+            }
+            else
+            {
+                Debug.LogWarning($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat {i} has null gameObject!");
+            }
         }
 
         // Position seats using existing layout
         if (playerCount >= 1)
         {
             // Seat 0: 0 degrees
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 0 at 0 degrees");
             m_Seats[0].seatTransform.localRotation = Quaternion.Euler(0, 0, 0);
             Vector3 direction = m_Seats[0].seatTransform.forward;
             m_Seats[0].seatTransform.localPosition = direction * m_SeatDistance;
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 0 position: {m_Seats[0].seatTransform.localPosition}, rotation: {m_Seats[0].seatTransform.localRotation.eulerAngles}");
         }
 
         if (playerCount >= 2)
         {
             // Seat 1: 180 degrees
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 1 at 180 degrees");
             m_Seats[1].seatTransform.localRotation = Quaternion.Euler(0, 180, 0);
             Vector3 direction = m_Seats[1].seatTransform.forward;
             m_Seats[1].seatTransform.localPosition = direction * m_SeatDistance;
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 1 position: {m_Seats[1].seatTransform.localPosition}, rotation: {m_Seats[1].seatTransform.localRotation.eulerAngles}");
         }
 
         if (playerCount >= 3)
         {
             // Seat 2: 270 degrees
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 2 at 270 degrees");
             m_Seats[2].seatTransform.localRotation = Quaternion.Euler(0, 270, 0);
             Vector3 direction = m_Seats[2].seatTransform.forward;
             m_Seats[2].seatTransform.localPosition = direction * m_SeatDistance;
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 2 position: {m_Seats[2].seatTransform.localPosition}, rotation: {m_Seats[2].seatTransform.localRotation.eulerAngles}");
         }
 
         if (playerCount >= 4)
         {
             // Seat 3: 90 degrees
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 3 at 90 degrees");
             m_Seats[3].seatTransform.localRotation = Quaternion.Euler(0, 90, 0);
             Vector3 direction = m_Seats[3].seatTransform.forward;
             m_Seats[3].seatTransform.localPosition = direction * m_SeatDistance;
+            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 3 position: {m_Seats[3].seatTransform.localPosition}, rotation: {m_Seats[3].seatTransform.localRotation.eulerAngles}");
         }
 
         // Log the arrangement
-        Debug.Log($"Positioned {playerCount} seats in the standard layout (0°, 180°, 270°, 90°)");
+        Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Completed positioning {playerCount} seats in the standard layout (0°, 180°, 270°, 90°)");
     }
 
     /// <summary>
@@ -141,19 +191,31 @@ public class TableTop : MonoBehaviour
     /// </summary>
     private void PositionSeatsSequentially(int playerCount)
     {
+        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Setting up {playerCount} seats in sequential layout");
+
         float angleStep = 360f / playerCount;
+        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Angle step: {angleStep} degrees");
 
         // Activate/deactivate and position seats
         for (int i = 0; i < m_Seats.Length; i++)
         {
             bool isActive = i < playerCount;
             if (m_Seats[i].seatTransform.gameObject != null)
+            {
+                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Setting seat {i} active: {isActive}");
                 m_Seats[i].seatTransform.gameObject.SetActive(isActive);
+            }
+            else
+            {
+                Debug.LogWarning($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} has null gameObject!");
+                continue;
+            }
 
             if (isActive)
             {
                 // Calculate angle for this seat (clockwise starting from 0)
                 float angle = i * angleStep;
+                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} angle: {angle} degrees");
 
                 // Set rotation to face the center
                 m_Seats[i].seatTransform.localRotation = Quaternion.Euler(0, angle, 0);
@@ -161,11 +223,13 @@ public class TableTop : MonoBehaviour
                 // Position the seat at the calculated angle
                 Vector3 direction = Quaternion.Euler(0, angle, 0) * Vector3.forward;
                 m_Seats[i].seatTransform.localPosition = direction * m_SeatDistance;
+
+                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
             }
         }
 
         // Log the arrangement
-        Debug.Log($"Positioned {playerCount} seats in a {GetPolygonName(playerCount)} arrangement");
+        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Completed positioning {playerCount} seats in a {GetPolygonName(playerCount)} arrangement");
     }
 
     /// <summary>
@@ -220,6 +284,9 @@ public class TableTop : MonoBehaviour
     /// </summary>
     public int GetPhysicalSeatIndex(int logicalPlayerIndex, int totalActivePlayers)
     {
+        Debug.Log($"{DEBUG_TAG}GetPhysicalSeatIndex - Logical index: {logicalPlayerIndex}, Total active players: {totalActivePlayers}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+
+        int result;
         if (totalActivePlayers <= 4)
         {
             // For 4 or fewer players, maintain the current mapping
@@ -227,18 +294,22 @@ public class TableTop : MonoBehaviour
             // Current physical layout: 0->0°, 1->180°, 2->270°, 3->90°
             switch (logicalPlayerIndex)
             {
-                case 0: return 0;
-                case 1: return 3;
-                case 2: return 1;
-                case 3: return 2;
-                default: return logicalPlayerIndex;
+                case 0: result = 0; break;
+                case 1: result = 3; break;
+                case 2: result = 1; break;
+                case 3: result = 2; break;
+                default: result = logicalPlayerIndex; break;
             }
+            Debug.Log($"{DEBUG_TAG}GetPhysicalSeatIndex - Using 4-player mapping, logical {logicalPlayerIndex} -> physical {result}");
         }
         else
         {
             // For 5+ players, physical and logical indices are the same
-            return logicalPlayerIndex;
+            result = logicalPlayerIndex;
+            Debug.Log($"{DEBUG_TAG}GetPhysicalSeatIndex - Using 5+ player mapping, logical {logicalPlayerIndex} -> physical {result} (same)");
         }
+
+        return result;
     }
 
     /// <summary>

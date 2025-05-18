@@ -245,25 +245,40 @@ namespace XRMultiplayer
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - IsOwner: {IsOwner}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, OwnerClientId: {NetworkObject.OwnerClientId}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+
             if (IsOwner)
             {
+                Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - This is the local player, setting up local player references");
                 // Set Local Player.
                 LocalPlayer = this;
                 XRINetworkGameManager.Instance.LocalPlayerConnected(NetworkObject.OwnerClientId);
+                Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - Called LocalPlayerConnected with ID: {NetworkObject.OwnerClientId}");
 
                 // Get Origin and set head.
                 m_XROrigin = FindFirstObjectByType<XROrigin>();
                 if (m_XROrigin != null)
                 {
+                    Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - Found XROrigin: {m_XROrigin.name}");
                     m_HeadOrigin = m_XROrigin.Camera.transform;
+                    Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - Set head origin to camera transform: {(m_HeadOrigin != null ? m_HeadOrigin.name : "null")}");
                 }
                 else
                 {
+                    Debug.LogError("[XRINetworkPlayer] OnNetworkSpawn - No XR Rig Available!");
                     Utils.Log("No XR Rig Available", 1);
                 }
 
+                Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - Setting up local player");
                 SetupLocalPlayer();
             }
+            else
+            {
+                Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - This is a remote player with OwnerClientId: {NetworkObject.OwnerClientId}");
+            }
+
+            Debug.Log($"[XRINetworkPlayer] OnNetworkSpawn - Completing setup for player with OwnerClientId: {NetworkObject.OwnerClientId}");
             CompleteSetup();
         }
 
@@ -357,17 +372,24 @@ namespace XRMultiplayer
         /// </summary>
         void CompleteSetup()
         {
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Starting for player with OwnerClientId: {NetworkObject.OwnerClientId}, IsOwner: {IsOwner}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+
             // Add player to XRINetworkManager.
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Calling XRINetworkGameManager.PlayerJoined with ID: {NetworkObject.OwnerClientId}");
             XRINetworkGameManager.Instance.PlayerJoined(NetworkObject.OwnerClientId);
 
             // Update Color and Name.
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Updating player color to: {m_PlayerColor.Value}");
             UpdatePlayerColor(Color.white, m_PlayerColor.Value);
+
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Updating player name to: {m_PlayerName.Value}");
             UpdatePlayerName(new FixedString128Bytes(""), m_PlayerName.Value);
 
             // Check if WorldCanvas exists
             WorldCanvas worldCanvas = FindFirstObjectByType<WorldCanvas>();
             if (worldCanvas != null)
             {
+                Debug.Log($"[XRINetworkPlayer] CompleteSetup - Found WorldCanvas, setting up player name tag");
                 // If we are using a World Canvas, reparent name tag and destroy local canvas.
                 Canvas localCanvas = m_PlayerNameTag.GetComponentInParent<Canvas>();
                 worldCanvas.SetupPlayerNameTag(this, m_PlayerNameTag);
@@ -375,11 +397,15 @@ namespace XRMultiplayer
             }
             else
             {
+                Debug.Log($"[XRINetworkPlayer] CompleteSetup - No WorldCanvas found, setting up local name tag");
                 // If we are not using a World Canvas, setup the name tag for local use.
                 m_PlayerNameTag.SetupNameTag(this);
             }
 
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Invoking onSpawnedAll event");
             onSpawnedAll?.Invoke();
+
+            Debug.Log($"[XRINetworkPlayer] CompleteSetup - Completed for player with OwnerClientId: {NetworkObject.OwnerClientId}");
         }
         /// <summary>
         /// Callback anytime the local player sets <see cref="m_PlayerName"/>.

@@ -49,7 +49,7 @@ namespace XRMultiplayer
         /// <summary>
         /// Max amount of players allowed when creating a new room.
         /// </summary>
-        public const int maxPlayers = 4;
+        public const int maxPlayers = 8;
 
         const string k_DefaultPlayerName = "Unity Creator";
 
@@ -289,9 +289,17 @@ namespace XRMultiplayer
         /// <param name="localPlayerId">Sets based on <see cref="NetworkObject.OwnerClientId"/> from the local player</param>
         public virtual void LocalPlayerConnected(ulong localPlayerId)
         {
+            Debug.Log($"[XRINetworkGameManager] LocalPlayerConnected - PlayerID: {localPlayerId}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+            Debug.Log($"[XRINetworkGameManager] LocalPlayerConnected - Previous LocalId: {LocalId}, Connected: {m_Connected.Value}");
+
             LocalId = localPlayerId;
+            Debug.Log($"[XRINetworkGameManager] LocalPlayerConnected - Set LocalId to {LocalId}");
+
             m_Connected.Value = true;
+            Debug.Log($"[XRINetworkGameManager] LocalPlayerConnected - Set Connected to {m_Connected.Value}");
+
             PlayerHudNotification.Instance.ShowText($"<b>Status:</b> Connected");
+            Debug.Log($"[XRINetworkGameManager] LocalPlayerConnected - Showed connection notification");
         }
 
         /// <summary>
@@ -302,18 +310,31 @@ namespace XRMultiplayer
         /// </param>
         protected virtual void OnLocalClientStopped(bool id)
         {
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - ID: {id}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Current player count: {m_CurrentPlayerIDs.Count}, Players: {string.Join(", ", m_CurrentPlayerIDs)}");
+
             m_Connected.Value = false;
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Set Connected to {m_Connected.Value}");
+
             m_CurrentPlayerIDs.Clear();
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Cleared current player IDs");
+
             PlayerHudNotification.Instance.ShowText($"<b>Status:</b> Disconnected");
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Showed disconnection notification");
+
             // Check if authenticated on disconnect.
             if (IsAuthenticated())
             {
+                Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Still authenticated, setting state to Authenticated");
                 m_ConnectionState.Value = ConnectionState.Authenticated;
             }
             else
             {
+                Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Not authenticated, setting state to None");
                 m_ConnectionState.Value = ConnectionState.None;
             }
+
+            Debug.Log($"[XRINetworkGameManager] OnLocalClientStopped - Final connection state: {m_ConnectionState.Value}");
         }
 
         /// <summary>
@@ -398,14 +419,21 @@ namespace XRMultiplayer
         /// <remarks>Called from <see cref="XRINetworkPlayer.CompleteSetup"/>.</remarks>
         public virtual void PlayerJoined(ulong playerID)
         {
+            Debug.Log($"[XRINetworkGameManager] PlayerJoined - PlayerID: {playerID}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+            Debug.Log($"[XRINetworkGameManager] PlayerJoined - Current player count: {m_CurrentPlayerIDs.Count}, Players: {string.Join(", ", m_CurrentPlayerIDs)}");
+
             // If playerID is not already registered, then add.
             if (!m_CurrentPlayerIDs.Contains(playerID))
             {
+                Debug.Log($"[XRINetworkGameManager] PlayerJoined - Adding new player ID: {playerID}");
                 m_CurrentPlayerIDs.Add(playerID);
+                Debug.Log($"[XRINetworkGameManager] PlayerJoined - Invoking playerStateChanged event with playerID: {playerID}, connected: true");
                 playerStateChanged?.Invoke(playerID, true);
+                Debug.Log($"[XRINetworkGameManager] PlayerJoined - New player count: {m_CurrentPlayerIDs.Count}, Players: {string.Join(", ", m_CurrentPlayerIDs)}");
             }
             else
             {
+                Debug.LogWarning($"[XRINetworkGameManager] PlayerJoined - Trying to add a player ID [{playerID}] that already exists!");
                 Utils.Log($"{k_DebugPrepend}Trying to Add a player ID [{playerID}] that already exists", 1);
             }
         }
@@ -416,14 +444,21 @@ namespace XRMultiplayer
         /// <param name="playerID"><see cref="NetworkObject.OwnerClientId"/> of the player who left.</param>
         public virtual void PlayerLeft(ulong playerID)
         {
+            Debug.Log($"[XRINetworkGameManager] PlayerLeft - PlayerID: {playerID}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+            Debug.Log($"[XRINetworkGameManager] PlayerLeft - Current player count: {m_CurrentPlayerIDs.Count}, Players: {string.Join(", ", m_CurrentPlayerIDs)}");
+
             // Check to make sure player has been registerd.
             if (m_CurrentPlayerIDs.Contains(playerID))
             {
+                Debug.Log($"[XRINetworkGameManager] PlayerLeft - Removing player ID: {playerID}");
                 m_CurrentPlayerIDs.Remove(playerID);
+                Debug.Log($"[XRINetworkGameManager] PlayerLeft - Invoking playerStateChanged event with playerID: {playerID}, connected: false");
                 playerStateChanged?.Invoke(playerID, false);
+                Debug.Log($"[XRINetworkGameManager] PlayerLeft - New player count: {m_CurrentPlayerIDs.Count}, Players: {string.Join(", ", m_CurrentPlayerIDs)}");
             }
             else
             {
+                Debug.LogWarning($"[XRINetworkGameManager] PlayerLeft - Trying to remove a player ID [{playerID}] that doesn't exist!");
                 Utils.Log($"{k_DebugPrepend}Trying to remove a player ID [{playerID}] that doesn't exist", 1);
             }
         }
