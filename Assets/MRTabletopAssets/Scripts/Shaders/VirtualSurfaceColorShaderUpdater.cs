@@ -192,8 +192,18 @@ public class VirtualSurfaceColorShaderUpdater : MonoBehaviour
 
     private void HandleActivePlayerChanged(int newActivePlayerIndex)
     {
+        UpdateActivePlayer(newActivePlayerIndex);
+    }
+
+    /// <summary>
+    /// Explicitly updates the active player index in the shader.
+    /// This can be called directly when needed to force an update.
+    /// </summary>
+    public void UpdateActivePlayer(int activePlayerIndex)
+    {
+        Debug.Log($"VirtualSurfaceColorShaderUpdater: Updating active player index to {activePlayerIndex}");
         m_Renderer.GetPropertyBlock(m_PropertyBlock);
-        m_PropertyBlock.SetFloat(m_ActivePlayerIndexProperty, newActivePlayerIndex);
+        m_PropertyBlock.SetFloat(m_ActivePlayerIndexProperty, activePlayerIndex);
         m_Renderer.SetPropertyBlock(m_PropertyBlock);
     }
 

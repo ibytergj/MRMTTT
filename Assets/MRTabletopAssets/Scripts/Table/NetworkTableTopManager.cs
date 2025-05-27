@@ -161,7 +161,8 @@ public class NetworkTableTopManager : NetworkBehaviour
         if (IsServer && m_TableTop != null)
         {
             int occupiedSeatCount = CountOccupiedSeats();
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Occupied seat count: {occupiedSeatCount}");
+            int previousPlayerCount = m_ActivePlayerCount.Value;
+            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Occupied seat count: {occupiedSeatCount}, Previous player count: {previousPlayerCount}");
 
             // Determine how many seats to show based on occupied seats
             int seatsToShow;
@@ -170,7 +171,7 @@ public class NetworkTableTopManager : NetworkBehaviour
             {
                 // For 1-4 players, use the standard 4-player layout
                 seatsToShow = 4;
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using standard 4-player layout");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using standard 4-player layout (fixed positions)");
             }
             else
             {
@@ -178,22 +179,41 @@ public class NetworkTableTopManager : NetworkBehaviour
                 // This creates a pentagon for 5, hexagon for 6, etc.
                 seatsToShow = occupiedSeatCount;
                 seatsToShow = Mathf.Min(8, seatsToShow); // Cap at 8 players
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using {seatsToShow}-player layout (pentagon/hexagon/etc)");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using {seatsToShow}-player layout (regular polygon)");
             }
 
-            Debug.Log($"{DEBUG_TAG}Updating seat positions for {seatsToShow} seats (occupied seats: {occupiedSeatCount})");
+            // Only update if the player count has changed
+            if (seatsToShow != previousPlayerCount)
+            {
+                Debug.Log($"{DEBUG_TAG}Updating seat positions for {seatsToShow} seats (occupied seats: {occupiedSeatCount})");
 
-            // Update the NetworkVariable to synchronize to clients
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Setting m_ActivePlayerCount.Value from {m_ActivePlayerCount.Value} to {seatsToShow}");
-            m_ActivePlayerCount.Value = seatsToShow;
+                // Update the NetworkVariable to synchronize to clients
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Setting m_ActivePlayerCount.Value from {previousPlayerCount} to {seatsToShow}");
+                m_ActivePlayerCount.Value = seatsToShow;
 
-            // Update local table
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling m_TableTop.UpdateSeatPositions({seatsToShow})");
-            m_TableTop.UpdateSeatPositions(seatsToShow);
+                // Update local table
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling m_TableTop.UpdateSeatPositions({seatsToShow})");
+                m_TableTop.UpdateSeatPositions(seatsToShow);
 
-            // Update VirtualSurfaceColorShaderUpdater components with new player count
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling UpdateShaderComponents({seatsToShow})");
-            UpdateShaderComponents(seatsToShow);
+                // Update VirtualSurfaceColorShaderUpdater components with new player count
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling UpdateShaderComponents({seatsToShow})");
+                UpdateShaderComponents(seatsToShow);
+
+                // If transitioning between 4-player and 5+ player modes, reposition all players
+                if ((previousPlayerCount <= 4 && seatsToShow > 4) ||
+                    (previousPlayerCount > 4 && seatsToShow <= 4))
+                {
+                    Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Transitioning between 4-player and 5+ player modes, repositioning all players");
+                    RepositionAllPlayers();
+                }
+
+                // Log the current NetworkVariable value to verify it was updated
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - After update: m_ActivePlayerCount.Value = {m_ActivePlayerCount.Value}");
+            }
+            else
+            {
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Player count unchanged ({seatsToShow}), skipping update");
+            }
 
             // Update active player index in PlayerColorManager if available
             if (MRTabletopAssets.PlayerColorManager.Instance != null)
@@ -216,6 +236,9 @@ public class NetworkTableTopManager : NetworkBehaviour
                 // Trigger color palette changed event to update all UI elements
                 Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling PlayerColorManager.NotifyColorPaletteChanged()");
                 MRTabletopAssets.PlayerColorManager.Instance.NotifyColorPaletteChanged();
+
+                // Ensure all clients update their highlighting
+                UpdateActivePlayerRpc(activePlayerIndex);
             }
             else
             {
@@ -224,6 +247,16 @@ public class NetworkTableTopManager : NetworkBehaviour
         }
         else
         {
+            // Log why we're not updating seat positions
+            if (!IsServer)
+            {
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Not updating seat positions because this is not the server");
+            }
+            if (m_TableTop == null)
+            {
+                Debug.LogWarning($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Not updating seat positions because m_TableTop is null");
+            }
+
             Debug.LogWarning($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Not server or m_TableTop is null. IsServer: {IsServer}, m_TableTop: {(m_TableTop != null ? "not null" : "null")}");
         }
     }
@@ -239,6 +272,55 @@ public class NetworkTableTopManager : NetworkBehaviour
         foreach (var updater in shaderUpdaters)
         {
             updater.UpdatePlayerCount(playerCount);
+        }
+    }
+
+    /// <summary>
+    /// Repositions all players based on their current seats.
+    /// Used when transitioning between 4-player and 5+ player modes.
+    /// </summary>
+    private void RepositionAllPlayers()
+    {
+        Debug.Log($"{DEBUG_TAG}RepositionAllPlayers - Repositioning all players based on their current seats");
+
+        // Reposition all players based on their current seats
+        for (int i = 0; i < networkedSeats.Count; i++)
+        {
+            if (networkedSeats[i].isOccupied)
+            {
+                Debug.Log($"{DEBUG_TAG}RepositionAllPlayers - Reassigning seat {i} to player {networkedSeats[i].playerID}");
+                // Reassign the seat to trigger repositioning
+                AssignSeatRpc(i, networkedSeats[i].playerID);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the active player highlighting on all clients.
+    /// </summary>
+    [Rpc(SendTo.Everyone)]
+    void UpdateActivePlayerRpc(int activePlayerIndex)
+    {
+        Debug.Log($"{DEBUG_TAG}UpdateActivePlayerRpc - ActivePlayerIndex: {activePlayerIndex}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+
+        // Update local highlighting
+        if (MRTabletopAssets.PlayerColorManager.Instance != null)
+        {
+            Debug.Log($"{DEBUG_TAG}UpdateActivePlayerRpc - Setting active player index to {activePlayerIndex} in PlayerColorManager");
+            MRTabletopAssets.PlayerColorManager.Instance.ActivePlayerIndex = activePlayerIndex;
+            MRTabletopAssets.PlayerColorManager.Instance.NotifyColorPaletteChanged();
+
+            // Force shader updates
+            var shaderUpdaters = FindObjectsByType<VirtualSurfaceColorShaderUpdater>(FindObjectsSortMode.None);
+            foreach (var updater in shaderUpdaters)
+            {
+                Debug.Log($"{DEBUG_TAG}UpdateActivePlayerRpc - Updating shader for {updater.gameObject.name}");
+                updater.UpdateShaderProperties();
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"{DEBUG_TAG}UpdateActivePlayerRpc - PlayerColorManager instance not found!");
         }
     }
 
@@ -316,6 +398,18 @@ public class NetworkTableTopManager : NetworkBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Gets the network-synchronized player count for use by other components.
+    /// This is the authoritative player count that determines seat positioning.
+    /// </summary>
+    /// <returns>The network-synchronized player count</returns>
+    public int GetNetworkSynchronizedPlayerCount()
+    {
+        int result = m_ActivePlayerCount.Value;
+        Debug.Log($"{DEBUG_TAG}GetNetworkSynchronizedPlayerCount - Returning {result}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}");
+        return result;
+    }
+
     [Rpc(SendTo.Server)]
     void RequestSeatServerRpc(ulong localPlayerID, int currentSeatID, int newSeatID = -2)
     {
@@ -344,6 +438,31 @@ public class NetworkTableTopManager : NetworkBehaviour
         int availableSeat = -1;
         Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Checking {networkedSeats.Count} seats");
 
+        // Get the current active player count
+        int occupiedSeats = CountOccupiedSeats();
+        int activePlayers = GetActivePlayerCount();
+        Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Occupied seats: {occupiedSeats}, Active players: {activePlayers}");
+
+        // Preferred seating order for 4 or fewer players
+        // This maintains the original seat assignment preference
+        if (occupiedSeats < 4)
+        {
+            int[] preferredOrder = { 0, 1, 2, 3 };
+            Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Using preferred order for 4 or fewer players");
+
+            // Try to assign seats in the preferred order
+            foreach (int seatIndex in preferredOrder)
+            {
+                if (seatIndex < networkedSeats.Count && !networkedSeats[seatIndex].isOccupied)
+                {
+                    availableSeat = seatIndex;
+                    Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Found preferred available seat: {availableSeat}");
+                    return availableSeat;
+                }
+            }
+        }
+
+        // Fall back to first available seat for 5+ players or if preferred seats are taken
         for (int i = 0; i < networkedSeats.Count; i++)
         {
             Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Seat {i} occupied: {networkedSeats[i].isOccupied}");
@@ -416,13 +535,42 @@ public class NetworkTableTopManager : NetworkBehaviour
 
         if (XRINetworkGameManager.Instance.TryGetPlayerByID(playerID, out var player))
         {
-            Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Found player {playerID}, assigning to seat {seatID}");
+            Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Found player {player.playerName} (ID: {playerID}), assigning to seat {seatID}");
             m_SeatButtons[seatID].AssignPlayerToSeat(player);
 
             if (playerID == NetworkManager.Singleton.LocalClientId)
             {
                 Debug.Log($"{DEBUG_TAG}AssignSeatRpc - This is the local player, teleporting to seat {seatID}");
-                m_SeatSystem.TeleportToSeat(seatID);
+
+                // Ensure TableSeatSystem is valid
+                if (m_SeatSystem != null)
+                {
+                    // Get the active player count for proper positioning
+                    int activePlayers = GetActivePlayerCount();
+                    Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Active player count: {activePlayers}, teleporting to seat {seatID}");
+
+                    // Teleport to the seat
+                    m_SeatSystem.TeleportToSeat(seatID);
+                    Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Teleported to seat {seatID}, current seat: {TableTop.k_CurrentSeat}");
+
+                    // Verify the teleportation was successful
+                    if (TableTop.k_CurrentSeat == seatID)
+                    {
+                        Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Teleportation successful, seat {seatID} confirmed");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{DEBUG_TAG}AssignSeatRpc - Teleportation may have failed, expected seat {seatID} but got {TableTop.k_CurrentSeat}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"{DEBUG_TAG}AssignSeatRpc - m_SeatSystem is null! Cannot teleport to seat {seatID}");
+                }
+            }
+            else
+            {
+                Debug.Log($"{DEBUG_TAG}AssignSeatRpc - This is not the local player (local: {NetworkManager.Singleton.LocalClientId}, player: {playerID}), skipping teleportation");
             }
         }
         else

@@ -19,6 +19,7 @@ namespace MRTabletopAssets
 
         // Active player index for highlighting
         [SerializeField] private int m_ActivePlayerIndex = -1;
+        private NetworkVariable<int> m_NetworkActivePlayerIndex = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         // Active player highlighting settings
         [Header("Active Player Highlighting")]
@@ -182,6 +183,9 @@ namespace MRTabletopAssets
 
             m_InNetworkedSession = true;
 
+            // Subscribe to NetworkVariable changes
+            m_NetworkActivePlayerIndex.OnValueChanged += OnNetworkActivePlayerIndexChanged;
+
             if (IsServer)
             {
                 // Ensure host player's color is properly set
@@ -189,11 +193,19 @@ namespace MRTabletopAssets
 
                 // Host initializes the network color palette
                 InitializeHostColorPalette();
+
+                // Initialize the NetworkVariable with the current active player index
+                m_NetworkActivePlayerIndex.Value = m_ActivePlayerIndex;
+                Debug.Log($"PlayerColorManager: Initialized network active player index to {m_ActivePlayerIndex}");
             }
             else
             {
                 // Clients back up their local palette
                 BackupLocalColorPalette();
+
+                // Clients initialize their local active player index from the NetworkVariable
+                m_ActivePlayerIndex = m_NetworkActivePlayerIndex.Value;
+                Debug.Log($"PlayerColorManager: Client initialized active player index from network: {m_ActivePlayerIndex}");
             }
 
             // Subscribe to host color palette changes
@@ -241,6 +253,9 @@ namespace MRTabletopAssets
 
             // Unsubscribe from host color palette changes
             m_HostColorPalette.OnListChanged -= OnHostColorPaletteChanged;
+
+            // Unsubscribe from NetworkVariable changes
+            m_NetworkActivePlayerIndex.OnValueChanged -= OnNetworkActivePlayerIndexChanged;
 
             if (!IsServer)
             {
@@ -357,6 +372,7 @@ namespace MRTabletopAssets
             if (m_ActivePlayerIndex != index)
             {
                 m_ActivePlayerIndex = index;
+                Debug.Log($"PlayerColorManager: SetActivePlayerIndex - Setting active player index to {index}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}");
 
                 // Update the glow color based on the new active player's color
                 if (index >= 0 && index < m_PlayerColors.Length)
@@ -364,12 +380,46 @@ namespace MRTabletopAssets
                     UpdateActivePlayerGlowColor();
                 }
 
+                // Notify local listeners
                 OnActivePlayerChanged?.Invoke(m_ActivePlayerIndex);
 
-                // If in a networked session and we're the server, sync to clients
+                // If in a networked session and we're the server, update the NetworkVariable
+                // This will automatically sync to all clients
                 if (m_InNetworkedSession && IsServer)
                 {
+                    Debug.Log($"PlayerColorManager: SetActivePlayerIndex - Updating NetworkVariable to {index}");
+                    m_NetworkActivePlayerIndex.Value = index;
+
+                    // For backward compatibility, also use the RPC
                     SyncActivePlayerIndexClientRpc(m_ActivePlayerIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to the NetworkVariable for active player index.
+        /// </summary>
+        private void OnNetworkActivePlayerIndexChanged(int previousValue, int newValue)
+        {
+            // Only clients should respond to this (server already updated its local value)
+            if (!IsServer)
+            {
+                Debug.Log($"PlayerColorManager: OnNetworkActivePlayerIndexChanged - Previous: {previousValue}, New: {newValue}");
+
+                // Update local active player index
+                if (m_ActivePlayerIndex != newValue)
+                {
+                    m_ActivePlayerIndex = newValue;
+
+                    // Update the glow color based on the new active player's color
+                    if (newValue >= 0 && newValue < m_PlayerColors.Length)
+                    {
+                        UpdateActivePlayerGlowColor();
+                    }
+
+                    // Notify local listeners
+                    OnActivePlayerChanged?.Invoke(m_ActivePlayerIndex);
+                    Debug.Log($"PlayerColorManager: Client updated active player index to {newValue}");
                 }
             }
         }

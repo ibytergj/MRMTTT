@@ -2,6 +2,7 @@ using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
+using Unity.Netcode;
 
 public class TableSeatSystem : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class TableSeatSystem : MonoBehaviour
     [SerializeField]
     UnityEvent<int> m_OnSeatChanged;
 
+    [SerializeField]
+    private NetworkTableTopManager m_NetworkTableTopManager;
+
     XROrigin m_XROrigin;
 
     void Awake()
@@ -29,11 +33,34 @@ public class TableSeatSystem : MonoBehaviour
     void FindReferences()
     {
         m_XROrigin = FindFirstObjectByType<XROrigin>();
+
+        if (m_NetworkTableTopManager == null)
+        {
+            m_NetworkTableTopManager = FindFirstObjectByType<NetworkTableTopManager>();
+            if (m_NetworkTableTopManager == null)
+            {
+                Debug.LogWarning($"{DEBUG_TAG}FindReferences - Could not find NetworkTableTopManager!");
+            }
+        }
     }
 
     public void TeleportToSeat(int seatNum)
     {
         Debug.Log($"{DEBUG_TAG}TeleportToSeat - Seat number: {seatNum}, Current seat: {TableTop.k_CurrentSeat}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+
+        // Validate TableTop reference
+        if (m_TableTop == null)
+        {
+            Debug.LogError($"{DEBUG_TAG}TeleportToSeat - TableTop reference is null! Cannot teleport to seat {seatNum}");
+            return;
+        }
+
+        // Validate seat number
+        if (seatNum >= 0 && seatNum >= m_TableTop.seats.Length)
+        {
+            Debug.LogError($"{DEBUG_TAG}TeleportToSeat - Invalid seat number {seatNum}! Max seat index is {m_TableTop.seats.Length - 1}");
+            return;
+        }
 
         // Check for spectator seat or initial seat
         if (TableTop.k_CurrentSeat < 0)
@@ -46,54 +73,123 @@ public class TableSeatSystem : MonoBehaviour
         TableTop.k_CurrentSeat = seatNum;
         Debug.Log($"{DEBUG_TAG}TeleportToSeat - Previous seat: {prevSeat}, New seat: {seatNum}");
 
+        // Get rotation angles
         float currentAngle = GetRotationAngleBasedOnSeatNum(prevSeat);
         float newAngle = GetRotationAngleBasedOnSeatNum(seatNum);
         float rotationAmount = newAngle - currentAngle;
 
         Debug.Log($"{DEBUG_TAG}TeleportToSeat - Current angle: {currentAngle}, New angle: {newAngle}, Rotation amount: {rotationAmount}");
 
-        if (m_XROrigin != null)
+        // Check for XROrigin
+        if (m_XROrigin == null)
         {
+            Debug.LogWarning($"{DEBUG_TAG}TeleportToSeat - XROrigin is null, attempting to find it");
+            FindReferences();
+
+            if (m_XROrigin == null)
+            {
+                Debug.LogError($"{DEBUG_TAG}TeleportToSeat - Failed to find XROrigin! Cannot teleport player");
+                return;
+            }
+            else
+            {
+                Debug.Log($"{DEBUG_TAG}TeleportToSeat - Successfully found XROrigin");
+            }
+        }
+
+        try
+        {
+            // Perform the rotation
             Debug.Log($"{DEBUG_TAG}TeleportToSeat - XROrigin before rotation: position={m_XROrigin.transform.position}, rotation={m_XROrigin.transform.rotation.eulerAngles}");
             m_XROrigin.transform.RotateAround(transform.position, transform.up, rotationAmount);
             Debug.Log($"{DEBUG_TAG}TeleportToSeat - XROrigin after rotation: position={m_XROrigin.transform.position}, rotation={m_XROrigin.transform.rotation.eulerAngles}");
+
+            // Invoke the seat changed event
+            m_OnSeatChanged.Invoke(seatNum);
+            Debug.Log($"{DEBUG_TAG}TeleportToSeat - Invoked OnSeatChanged event with seat number: {seatNum}");
+
+            // Reset transform
+            Debug.Log($"{DEBUG_TAG}TeleportToSeat - Setting transform position and rotation to zero/identity");
+            transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+            Debug.Log($"{DEBUG_TAG}TeleportToSeat - Successfully teleported to seat {seatNum}");
         }
-        else
+        catch (System.Exception ex)
         {
-            Debug.LogError($"{DEBUG_TAG}TeleportToSeat - XROrigin is null!");
+            Debug.LogError($"{DEBUG_TAG}TeleportToSeat - Exception during teleportation: {ex.Message}\n{ex.StackTrace}");
         }
-
-        m_OnSeatChanged.Invoke(seatNum);
-        Debug.Log($"{DEBUG_TAG}TeleportToSeat - Invoked OnSeatChanged event with seat number: {seatNum}");
-
-        Debug.Log($"{DEBUG_TAG}TeleportToSeat - Setting transform position and rotation to zero/identity");
-        transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 
     float GetRotationAngleBasedOnSeatNum(int seatNum)
     {
         Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Seat number: {seatNum}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
+        // Handle invalid seat number
+        if (m_TableTop == null)
+        {
+            Debug.LogError($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - TableTop reference is null!");
+            return 0f;
+        }
+
         int totalSeats = m_TableTop.seats.Length;
+
+        // Get the network-synchronized player count
         int activePlayers = GetActivePlayerCount();
+
+        // Log detailed information about the player count source
+        if (m_NetworkTableTopManager != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        {
+            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Network active: IsServer={NetworkManager.Singleton.IsServer}, IsClient={NetworkManager.Singleton.IsClient}, IsHost={NetworkManager.Singleton.IsHost}");
+            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using network-synchronized player count: {activePlayers}");
+        }
+        else
+        {
+            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Network not active, using local player count: {activePlayers}");
+        }
+
         Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Total seats: {totalSeats}, Active players: {activePlayers}");
+
+        // Handle spectator seat (-1) or invalid seat
+        if (seatNum < 0)
+        {
+            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Spectator or invalid seat ({seatNum}), returning 0°");
+            return 0f;
+        }
 
         float result;
         if (activePlayers <= 4)
         {
             // Original 4-player layout with non-sequential numbering
+            // This maintains exact backward compatibility with the original implementation
             switch (seatNum)
             {
-                case 0: result = 0f; Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 0 -> 0°"); break;
-                case 1: result = 180f; Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 1 -> 180°"); break;
-                case 2: result = 270f; Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 2 -> 270°"); break;
-                case 3: result = 90f; Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 3 -> 90°"); break;
-                default: result = 0f; Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, unknown seat {seatNum} -> 0°"); break;
+                case 0:
+                    result = 0f;
+                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 0 -> 0° (bottom)");
+                    break;
+                case 1:
+                    result = 180f;
+                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 1 -> 180° (top)");
+                    break;
+                case 2:
+                    result = 270f;
+                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 2 -> 270° (left)");
+                    break;
+                case 3:
+                    result = 90f;
+                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 3 -> 90° (right)");
+                    break;
+                default:
+                    // For any other seat in 4-player mode, use a fallback
+                    result = 0f;
+                    Debug.LogWarning($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, unknown seat {seatNum} -> 0° (fallback)");
+                    break;
             }
         }
         else
         {
             // Sequential clockwise numbering for 5-8 players
+            // For 5+ players, we use evenly distributed angles in a regular polygon
             float anglePerSeat = 360f / activePlayers;
             result = seatNum * anglePerSeat;
             Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using {activePlayers}-player layout, seat {seatNum} -> {result}° (anglePerSeat: {anglePerSeat}°)");
@@ -103,13 +199,36 @@ public class TableSeatSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the number of active players based on active seat transforms.
+    /// Gets the number of active players based on the network-synchronized player count.
+    /// Falls back to counting active seat transforms if network data is unavailable.
     /// </summary>
     private int GetActivePlayerCount()
     {
-        Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - Checking active seats, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+        Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
-        // Count active seats or get from configuration
+        // First try to get the network-synchronized player count
+        if (m_NetworkTableTopManager != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        {
+            // Access the ActivePlayerCount from NetworkTableTopManager
+            int networkPlayerCount = m_NetworkTableTopManager.GetNetworkSynchronizedPlayerCount();
+
+            if (networkPlayerCount > 0)
+            {
+                Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - Using network-synchronized player count: {networkPlayerCount}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
+                return networkPlayerCount;
+            }
+            else
+            {
+                Debug.LogWarning($"{DEBUG_TAG}GetActivePlayerCount - Network player count is invalid ({networkPlayerCount}), falling back to local count");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"{DEBUG_TAG}GetActivePlayerCount - NetworkTableTopManager not available or network not active, falling back to local count");
+        }
+
+        // Fallback: Count active seats locally
+        Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - Falling back to counting active seats");
         int count = 0;
         for (int i = 0; i < m_TableTop.seats.Length; i++)
         {
