@@ -2,7 +2,6 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using XRMultiplayer;
-using System.Collections;
 using MRTabletopAssets;
 
 public class NetworkTableTopManager : NetworkBehaviour
@@ -284,50 +283,15 @@ public class NetworkTableTopManager : NetworkBehaviour
     {
         Debug.Log($"{DEBUG_TAG}RepositionAllPlayers - Repositioning all players based on their current seats");
 
-        // Use a separate RPC for repositioning to avoid disrupting player network state
+        // Reposition all players based on their current seats
         for (int i = 0; i < networkedSeats.Count; i++)
         {
             if (networkedSeats[i].isOccupied)
             {
-                Debug.Log($"{DEBUG_TAG}RepositionAllPlayers - Repositioning player {networkedSeats[i].playerID} in seat {i}");
-                // Use repositioning RPC instead of assignment RPC to avoid network state disruption
-                RepositionPlayerRpc(i, networkedSeats[i].playerID);
+                Debug.Log($"{DEBUG_TAG}RepositionAllPlayers - Reassigning seat {i} to player {networkedSeats[i].playerID}");
+                // Reassign the seat to trigger repositioning
+                AssignSeatRpc(i, networkedSeats[i].playerID);
             }
-        }
-    }
-
-    /// <summary>
-    /// Repositions a player to their current seat without disrupting their network state.
-    /// This is different from AssignSeatRpc which is for initial seat assignment.
-    /// </summary>
-    [Rpc(SendTo.Everyone)]
-    void RepositionPlayerRpc(int seatID, ulong playerID)
-    {
-        Debug.Log($"{DEBUG_TAG}RepositionPlayerRpc - SeatID: {seatID}, PlayerID: {playerID}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, LocalClientId: {NetworkManager.Singleton.LocalClientId}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
-
-        // Only teleport the local player, don't reassign seat buttons or disrupt network state
-        if (playerID == NetworkManager.Singleton.LocalClientId)
-        {
-            Debug.Log($"{DEBUG_TAG}RepositionPlayerRpc - This is the local player, teleporting to seat {seatID}");
-
-            // Ensure TableSeatSystem is valid
-            if (m_SeatSystem != null)
-            {
-                // Use the network-synchronized player count for consistent positioning
-                int networkPlayerCount = GetNetworkSynchronizedPlayerCount();
-                Debug.Log($"{DEBUG_TAG}RepositionPlayerRpc - Network player count: {networkPlayerCount}, repositioning to seat {seatID}");
-
-                // Use delayed teleportation to ensure proper timing
-                StartCoroutine(DelayedTeleportation(seatID, networkPlayerCount));
-            }
-            else
-            {
-                Debug.LogError($"{DEBUG_TAG}RepositionPlayerRpc - m_SeatSystem is null! Cannot teleport to seat {seatID}");
-            }
-        }
-        else
-        {
-            Debug.Log($"{DEBUG_TAG}RepositionPlayerRpc - This is not the local player (local: {NetworkManager.Singleton.LocalClientId}, player: {playerID}), skipping teleportation");
         }
     }
 
@@ -479,17 +443,12 @@ public class NetworkTableTopManager : NetworkBehaviour
         int activePlayers = GetActivePlayerCount();
         Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Occupied seats: {occupiedSeats}, Active players: {activePlayers}");
 
-        // Check if we're still in 4-player mode based on the current NetworkVariable value
-        // This ensures consistent behavior with the seat positioning logic
-        int currentPlayerCount = m_ActivePlayerCount.Value;
-        Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Current player count from NetworkVariable: {currentPlayerCount}");
-
-        // Preferred seating order for 4-player mode
-        // Use the NetworkVariable to determine mode, not just occupied seats
-        if (currentPlayerCount <= 4 && occupiedSeats < 4)
+        // Preferred seating order for 4 or fewer players
+        // This maintains the original seat assignment preference
+        if (occupiedSeats < 4)
         {
             int[] preferredOrder = { 0, 1, 2, 3 };
-            Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Using preferred order for 4-player mode");
+            Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Using preferred order for 4 or fewer players");
 
             // Try to assign seats in the preferred order
             foreach (int seatIndex in preferredOrder)
@@ -503,8 +462,7 @@ public class NetworkTableTopManager : NetworkBehaviour
             }
         }
 
-        // Sequential assignment for 5+ player mode or if preferred seats are taken
-        Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Using sequential assignment for 5+ player mode or fallback");
+        // Fall back to first available seat for 5+ players or if preferred seats are taken
         for (int i = 0; i < networkedSeats.Count; i++)
         {
             Debug.Log($"{DEBUG_TAG}GetAnyAvailableSeats - Seat {i} occupied: {networkedSeats[i].isOccupied}");
@@ -587,14 +545,23 @@ public class NetworkTableTopManager : NetworkBehaviour
                 // Ensure TableSeatSystem is valid
                 if (m_SeatSystem != null)
                 {
-                    // Use the network-synchronized player count for consistent positioning
-                    int networkPlayerCount = GetNetworkSynchronizedPlayerCount();
-                    int occupiedSeats = CountOccupiedSeats();
-                    Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Network player count: {networkPlayerCount}, Occupied seats: {occupiedSeats}, teleporting to seat {seatID}");
+                    // Get the active player count for proper positioning
+                    int activePlayers = GetActivePlayerCount();
+                    Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Active player count: {activePlayers}, teleporting to seat {seatID}");
 
-                    // Add a small delay to ensure seat positions are updated before teleportation
-                    // This helps with timing issues when transitioning between 4-player and 5+ player modes
-                    StartCoroutine(DelayedTeleportation(seatID, networkPlayerCount));
+                    // Teleport to the seat
+                    m_SeatSystem.TeleportToSeat(seatID);
+                    Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Teleported to seat {seatID}, current seat: {TableTop.k_CurrentSeat}");
+
+                    // Verify the teleportation was successful
+                    if (TableTop.k_CurrentSeat == seatID)
+                    {
+                        Debug.Log($"{DEBUG_TAG}AssignSeatRpc - Teleportation successful, seat {seatID} confirmed");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{DEBUG_TAG}AssignSeatRpc - Teleportation may have failed, expected seat {seatID} but got {TableTop.k_CurrentSeat}");
+                    }
                 }
                 else
                 {
@@ -609,32 +576,6 @@ public class NetworkTableTopManager : NetworkBehaviour
         else
         {
             Debug.LogError($"{DEBUG_TAG}AssignSeatRpc - Player with id {playerID} not found!");
-        }
-    }
-
-    /// <summary>
-    /// Coroutine to delay teleportation to ensure seat positions are properly updated.
-    /// This helps with timing issues when transitioning between 4-player and 5+ player modes.
-    /// </summary>
-    private System.Collections.IEnumerator DelayedTeleportation(int seatID, int networkPlayerCount)
-    {
-        Debug.Log($"{DEBUG_TAG}DelayedTeleportation - Starting delayed teleportation to seat {seatID} with player count {networkPlayerCount}");
-
-        // Wait a frame to ensure all NetworkVariable updates have been processed
-        yield return null;
-
-        // Teleport to the seat
-        m_SeatSystem.TeleportToSeat(seatID);
-        Debug.Log($"{DEBUG_TAG}DelayedTeleportation - Teleported to seat {seatID}, current seat: {TableTop.k_CurrentSeat}");
-
-        // Verify the teleportation was successful
-        if (TableTop.k_CurrentSeat == seatID)
-        {
-            Debug.Log($"{DEBUG_TAG}DelayedTeleportation - Teleportation successful, seat {seatID} confirmed");
-        }
-        else
-        {
-            Debug.LogWarning($"{DEBUG_TAG}DelayedTeleportation - Teleportation may have failed, expected seat {seatID} but got {TableTop.k_CurrentSeat}");
         }
     }
 
