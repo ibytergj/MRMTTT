@@ -266,7 +266,8 @@ public class TableSeatSystem : MonoBehaviour
             }
         }
 
-        if (TableTop.k_CurrentSeat < 0 || TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
+        // Validate seat index (GetSeat handles -1 by returning seat 0)
+        if (TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
         {
             Debug.LogError($"{DEBUG_TAG}ResetSeatRotation - Invalid current seat: {TableTop.k_CurrentSeat}");
             return;
@@ -288,12 +289,14 @@ public class TableSeatSystem : MonoBehaviour
     {
         Debug.Log($"{DEBUG_TAG}ResetToSeatDefault - Current seat: {TableTop.k_CurrentSeat}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
-        if (TableTop.k_CurrentSeat < 0 || TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
+        // Validate seat index (GetSeat handles -1 by returning seat 0)
+        if (TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
         {
             Debug.LogError($"{DEBUG_TAG}ResetToSeatDefault - Invalid current seat: {TableTop.k_CurrentSeat}");
             return;
         }
 
+        // GetSeat handles -1 gracefully by returning seat 0
         var seat = m_TableTop.GetSeat(TableTop.k_CurrentSeat);
         Debug.Log($"{DEBUG_TAG}ResetToSeatDefault - Seat position: {seat.position}, rotation: {seat.rotation.eulerAngles}");
 
