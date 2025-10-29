@@ -53,6 +53,7 @@ Material:
     - _InnerPadding: 0.6
     - _InnerSquareStrokeLength: 0.02
     - _Inner_Square_Corner_Radius: 0.06
+    - _Linear: 0
     - _Outer_Stroke_Corner_Radius: 0.06
     - _OutsideTransparency: 0.5
     - _PatternIntensity: 0.5

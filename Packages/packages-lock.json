@@ -8,7 +8,7 @@
         "com.unity.inputsystem": "1.1.1",
         "com.unity.cloud.gltfast": "6.12.1"
       },
-      "hash": "ab031e9155f7d3a0334e7512359ec35fa589363a"
+      "hash": "88fad6c4b1c96b21d5f4f86eab457ce1ffde3fbc"
     },
     "com.unity.burst": {
       "version": "1.8.25",
@@ -442,8 +442,8 @@
       "source": "registry",
       "dependencies": {
         "com.unity.inputsystem": "1.6.3",
-        "com.unity.xr.management": "4.0.1",
-        "com.unity.xr.core-utils": "2.2.2"
+        "com.unity.xr.core-utils": "2.2.2",
+        "com.unity.xr.management": "4.0.1"
       },
       "url": "https://packages.unity.com"
     },

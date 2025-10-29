@@ -35,14 +35,6 @@ public class TableTop : MonoBehaviour
         return m_Seats[seatIdx].seatTransform;
     }
 
-    void OnValidate()
-    {
-        foreach (TableSeat seat in m_Seats)
-        {
-            seat.seatTransform.localPosition = -seat.seatTransform.forward * m_SeatDistance;
-        }
-    }
-
     // Editor-only methods
     #if UNITY_EDITOR
     [ContextMenu("Test 8 Player Positioning")]
@@ -63,54 +55,37 @@ public class TableTop : MonoBehaviour
     #endif
 
     /// <summary>
-    /// Updates the seat positions based on the number of active players.
-    /// For 4 or fewer players, uses the original layout.
-    /// For 5-8 players, uses a sequential layout with evenly distributed angles.
+    /// Updates the seat visibility (active/inactive) based on the number of active players.
+    /// Seat transforms (position/rotation) are NOT modified - they should be set manually in the Inspector.
     /// </summary>
     /// <param name="playerCount">Number of active players (2-8)</param>
-    public void UpdateSeatPositions(int playerCount)
+    /// <param name="force8PlayerMode">Force 8-player mode (show all 8 seats) regardless of player count</param>
+    public void UpdateSeatPositions(int playerCount, bool force8PlayerMode = false)
     {
-        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Original playerCount: {playerCount}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Original playerCount: {playerCount}, force8PlayerMode: {force8PlayerMode}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
         playerCount = Mathf.Clamp(playerCount, 2, 8);
         Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Clamped playerCount: {playerCount}");
 
         Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Total seat count: {m_Seats.Length}");
 
-        // Log current seat states before changes
+        // Determine how many seats to activate
+        int seatsToActivate = force8PlayerMode ? 8 : playerCount;
+        Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Activating {seatsToActivate} seats");
+
+        // Activate/deactivate seats based on player count
+        // NOTE: Seat positions and rotations are NOT modified - they should be set in the Inspector
         for (int i = 0; i < m_Seats.Length; i++)
         {
+            bool isActive = i < seatsToActivate;
             if (m_Seats[i].seatTransform != null && m_Seats[i].seatTransform.gameObject != null)
             {
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Before: Seat {i} active: {m_Seats[i].seatTransform.gameObject.activeSelf}, " +
-                          $"position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Setting seat {i} active: {isActive}");
+                m_Seats[i].seatTransform.gameObject.SetActive(isActive);
             }
             else
             {
                 Debug.LogWarning($"{DEBUG_TAG}UpdateSeatPositions - Seat {i} has null transform or gameObject!");
-            }
-        }
-
-        if (playerCount <= 4)
-        {
-            // Use existing layout for 4 or fewer players
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Using standard layout for {playerCount} players");
-            PositionSeatsForFourOrLess(playerCount);
-        }
-        else
-        {
-            // Use sequential layout for 5-8 players
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - Using sequential layout for {playerCount} players");
-            PositionSeatsSequentially(playerCount);
-        }
-
-        // Log seat states after changes
-        for (int i = 0; i < m_Seats.Length; i++)
-        {
-            if (m_Seats[i].seatTransform != null && m_Seats[i].seatTransform.gameObject != null)
-            {
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositions - After: Seat {i} active: {m_Seats[i].seatTransform.gameObject.activeSelf}, " +
-                          $"position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
             }
         }
 
@@ -119,118 +94,7 @@ public class TableTop : MonoBehaviour
         UpdatePlayerCount(playerCount);
     }
 
-    /// <summary>
-    /// Positions seats using the original layout for 4 or fewer players.
-    /// </summary>
-    private void PositionSeatsForFourOrLess(int playerCount)
-    {
-        Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Setting up {playerCount} seats in standard layout");
 
-        // Activate/deactivate seats as needed
-        for (int i = 0; i < m_Seats.Length; i++)
-        {
-            bool isActive = i < playerCount;
-            if (m_Seats[i].seatTransform.gameObject != null)
-            {
-                Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Setting seat {i} active: {isActive}");
-                m_Seats[i].seatTransform.gameObject.SetActive(isActive);
-            }
-            else
-            {
-                Debug.LogWarning($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat {i} has null gameObject!");
-            }
-        }
-
-        // Position seats using existing layout
-        if (playerCount >= 1)
-        {
-            // Seat 0: 0 degrees
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 0 at 0 degrees");
-            m_Seats[0].seatTransform.localRotation = Quaternion.Euler(0, 0, 0);
-            Vector3 direction = m_Seats[0].seatTransform.forward;
-            m_Seats[0].seatTransform.localPosition = direction * m_SeatDistance;
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 0 position: {m_Seats[0].seatTransform.localPosition}, rotation: {m_Seats[0].seatTransform.localRotation.eulerAngles}");
-        }
-
-        if (playerCount >= 2)
-        {
-            // Seat 1: 180 degrees
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 1 at 180 degrees");
-            m_Seats[1].seatTransform.localRotation = Quaternion.Euler(0, 180, 0);
-            Vector3 direction = m_Seats[1].seatTransform.forward;
-            m_Seats[1].seatTransform.localPosition = direction * m_SeatDistance;
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 1 position: {m_Seats[1].seatTransform.localPosition}, rotation: {m_Seats[1].seatTransform.localRotation.eulerAngles}");
-        }
-
-        if (playerCount >= 3)
-        {
-            // Seat 2: 270 degrees
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 2 at 270 degrees");
-            m_Seats[2].seatTransform.localRotation = Quaternion.Euler(0, 270, 0);
-            Vector3 direction = m_Seats[2].seatTransform.forward;
-            m_Seats[2].seatTransform.localPosition = direction * m_SeatDistance;
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 2 position: {m_Seats[2].seatTransform.localPosition}, rotation: {m_Seats[2].seatTransform.localRotation.eulerAngles}");
-        }
-
-        if (playerCount >= 4)
-        {
-            // Seat 3: 90 degrees
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Positioning seat 3 at 90 degrees");
-            m_Seats[3].seatTransform.localRotation = Quaternion.Euler(0, 90, 0);
-            Vector3 direction = m_Seats[3].seatTransform.forward;
-            m_Seats[3].seatTransform.localPosition = direction * m_SeatDistance;
-            Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Seat 3 position: {m_Seats[3].seatTransform.localPosition}, rotation: {m_Seats[3].seatTransform.localRotation.eulerAngles}");
-        }
-
-        // Log the arrangement
-        Debug.Log($"{DEBUG_TAG}PositionSeatsForFourOrLess - Completed positioning {playerCount} seats in the standard layout (0°, 180°, 270°, 90°)");
-    }
-
-    /// <summary>
-    /// Positions seats sequentially around the table for 5-8 players in a regular polygon.
-    /// </summary>
-    private void PositionSeatsSequentially(int playerCount)
-    {
-        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Setting up {playerCount} seats in sequential layout");
-
-        float angleStep = 360f / playerCount;
-        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Angle step: {angleStep} degrees");
-
-        // Activate/deactivate and position seats
-        for (int i = 0; i < m_Seats.Length; i++)
-        {
-            bool isActive = i < playerCount;
-            if (m_Seats[i].seatTransform.gameObject != null)
-            {
-                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Setting seat {i} active: {isActive}");
-                m_Seats[i].seatTransform.gameObject.SetActive(isActive);
-            }
-            else
-            {
-                Debug.LogWarning($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} has null gameObject!");
-                continue;
-            }
-
-            if (isActive)
-            {
-                // Calculate angle for this seat (clockwise starting from 0)
-                float angle = i * angleStep;
-                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} angle: {angle} degrees");
-
-                // Set rotation to face the center
-                m_Seats[i].seatTransform.localRotation = Quaternion.Euler(0, angle, 0);
-
-                // Position the seat at the calculated angle
-                Vector3 direction = Quaternion.Euler(0, angle, 0) * Vector3.forward;
-                m_Seats[i].seatTransform.localPosition = direction * m_SeatDistance;
-
-                Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Seat {i} position: {m_Seats[i].seatTransform.localPosition}, rotation: {m_Seats[i].seatTransform.localRotation.eulerAngles}");
-            }
-        }
-
-        // Log the arrangement
-        Debug.Log($"{DEBUG_TAG}PositionSeatsSequentially - Completed positioning {playerCount} seats in a {GetPolygonName(playerCount)} arrangement");
-    }
 
     /// <summary>
     /// Gets the name of the polygon based on the number of sides.

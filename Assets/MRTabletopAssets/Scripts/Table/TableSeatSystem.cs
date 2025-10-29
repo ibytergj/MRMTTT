@@ -131,24 +131,6 @@ public class TableSeatSystem : MonoBehaviour
             return 0f;
         }
 
-        int totalSeats = m_TableTop.seats.Length;
-
-        // Get the network-synchronized player count
-        int activePlayers = GetActivePlayerCount();
-
-        // Log detailed information about the player count source
-        if (m_NetworkTableTopManager != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
-        {
-            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Network active: IsServer={NetworkManager.Singleton.IsServer}, IsClient={NetworkManager.Singleton.IsClient}, IsHost={NetworkManager.Singleton.IsHost}");
-            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using network-synchronized player count: {activePlayers}");
-        }
-        else
-        {
-            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Network not active, using local player count: {activePlayers}");
-        }
-
-        Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Total seats: {totalSeats}, Active players: {activePlayers}");
-
         // Handle spectator seat (-1) or invalid seat
         if (seatNum < 0)
         {
@@ -156,44 +138,23 @@ public class TableSeatSystem : MonoBehaviour
             return 0f;
         }
 
-        float result;
-        if (activePlayers <= 4)
+        // Validate seat index
+        if (seatNum >= m_TableTop.seats.Length)
         {
-            // Original 4-player layout with non-sequential numbering
-            // This maintains exact backward compatibility with the original implementation
-            switch (seatNum)
-            {
-                case 0:
-                    result = 0f;
-                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 0 -> 0° (bottom)");
-                    break;
-                case 1:
-                    result = 180f;
-                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 1 -> 180° (top)");
-                    break;
-                case 2:
-                    result = 270f;
-                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 2 -> 270° (left)");
-                    break;
-                case 3:
-                    result = 90f;
-                    Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, seat 3 -> 90° (right)");
-                    break;
-                default:
-                    // For any other seat in 4-player mode, use a fallback
-                    result = 0f;
-                    Debug.LogWarning($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using 4-player layout, unknown seat {seatNum} -> 0° (fallback)");
-                    break;
-            }
+            Debug.LogError($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Invalid seat number {seatNum}! Max seat index is {m_TableTop.seats.Length - 1}");
+            return 0f;
         }
-        else
+
+        // Read the actual rotation from the seat transform set in the Inspector
+        Transform seatTransform = m_TableTop.seats[seatNum].seatTransform;
+        if (seatTransform == null)
         {
-            // Sequential clockwise numbering for 5-8 players
-            // For 5+ players, we use evenly distributed angles in a regular polygon
-            float anglePerSeat = 360f / activePlayers;
-            result = seatNum * anglePerSeat;
-            Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Using {activePlayers}-player layout, seat {seatNum} -> {result}° (anglePerSeat: {anglePerSeat}°)");
+            Debug.LogError($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Seat {seatNum} has null transform!");
+            return 0f;
         }
+
+        float result = seatTransform.localRotation.eulerAngles.y;
+        Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Seat {seatNum} rotation from Inspector: {result}°");
 
         return result;
     }

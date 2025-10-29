@@ -80,6 +80,9 @@
         },
         {
             "m_Id": "5036098a1737498ab66395766ea0cab4"
+        },
+        {
+            "m_Id": "1b3616f6f8d94986821fb43b2dd36491"
         }
     ],
     "m_Keywords": [],
@@ -368,6 +371,9 @@
         },
         {
             "m_Id": "83e8e28a4d1f4abca1f4c29c28802ceb"
+        },
+        {
+            "m_Id": "180dff1b8a2c4cd2912badf3f9ca5b04"
         }
     ],
     "m_GroupDatas": [
@@ -434,6 +440,20 @@
                     "m_Id": "ca3b3ff745f544c0a6374b822efec0ea"
                 },
                 "m_SlotId": 0
+            }
+        },
+        {
+            "m_OutputSlot": {
+                "m_Node": {
+                    "m_Id": "180dff1b8a2c4cd2912badf3f9ca5b04"
+                },
+                "m_SlotId": 0
+            },
+            "m_InputSlot": {
+                "m_Node": {
+                    "m_Id": "bfde54a8837a406a97bbf92f6f887fb8"
+                },
+                "m_SlotId": 20
             }
         },
         {
@@ -2269,8 +2289,8 @@
     "m_ObjectId": "0e9bc23d7d954ee8977b51b272766b68",
     "m_Title": "New Group",
     "m_Position": {
-        "x": -10610.0,
-        "y": -2163.3330078125
+        "x": -10609.9990234375,
+        "y": -2163.999755859375
     }
 }
 
@@ -2411,6 +2431,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.0,
         "g": 0.0,
@@ -2513,12 +2535,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.5,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -2633,6 +2667,42 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
+    "m_ObjectId": "180dff1b8a2c4cd2912badf3f9ca5b04",
+    "m_Group": {
+        "m_Id": "0e9bc23d7d954ee8977b51b272766b68"
+    },
+    "m_Name": "Property",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": -8161.33251953125,
+            "y": -1200.6666259765625,
+            "width": 112.0,
+            "height": 36.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "a8408f210eb042bf98cb63f9144f1d92"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_Property": {
+        "m_Id": "1b3616f6f8d94986821fb43b2dd36491"
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "189da0735ee54afb9cf973314ccb4231",
     "m_Id": 2,
@@ -2692,6 +2762,31 @@
     "m_Value": 0.49000000953674319,
     "m_DefaultValue": 0.5,
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "1b3616f6f8d94986821fb43b2dd36491",
+    "m_Guid": {
+        "m_GuidSerialized": "c09c1aa9-c5f4-4640-8d7a-b7a68677fde1"
+    },
+    "m_Name": "Linear",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Linear",
+    "m_DefaultReferenceName": "_Linear",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": false
 }
 
 {
@@ -2958,6 +3053,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.7058823704719544,
         "g": 0.6705882549285889,
@@ -3051,6 +3148,20 @@
     "m_Property": {
         "m_Id": "84ccf67b44164f6d943727bf61248872"
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
+    "m_ObjectId": "2355fee4a1474a9292842e399393b5b3",
+    "m_Id": 20,
+    "m_DisplayName": "Linear",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Linear",
+    "m_StageCapability": 3,
+    "m_Value": false,
+    "m_DefaultValue": false
 }
 
 {
@@ -3193,12 +3304,24 @@
     "overrideHLSLDeclaration": true,
     "hlslDeclarationOverride": 2,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 4.0,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 3.0,
         "y": 8.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -3221,6 +3344,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.501960813999176,
         "g": 0.0,
@@ -3468,12 +3593,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.07500000298023224,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.019999999552965165,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -3482,8 +3619,8 @@
     "m_ObjectId": "2c8b0cc50fdb4f7d86467f718169d7e6",
     "m_Title": "Inner Square Dotted Grid",
     "m_Position": {
-        "x": -8269.3330078125,
-        "y": 1484.0
+        "x": -8268.666015625,
+        "y": 1483.333251953125
     }
 }
 
@@ -3507,6 +3644,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.11320751905441284,
         "g": 0.11320751905441284,
@@ -3881,12 +4020,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.0,
     "m_FloatType": 2,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -4345,6 +4496,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 1.0,
         "g": 1.0,
@@ -4744,12 +4897,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.5,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -4772,12 +4937,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 3.0,
     "m_FloatType": 0,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -6609,6 +6786,9 @@
         },
         {
             "m_Id": "c2f5f567a3964c14a6296217136f747d"
+        },
+        {
+            "m_Id": "1b3616f6f8d94986821fb43b2dd36491"
         }
     ]
 }
@@ -6860,12 +7040,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.6000000238418579,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -7301,12 +7493,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 1.0,
     "m_FloatType": 2,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -7617,12 +7821,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 1.0,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.10000000149011612,
         "y": 2.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -8116,6 +8332,20 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
+    "m_ObjectId": "a8408f210eb042bf98cb63f9144f1d92",
+    "m_Id": 0,
+    "m_DisplayName": "Linear",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Out",
+    "m_StageCapability": 3,
+    "m_Value": false,
+    "m_DefaultValue": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicValueMaterialSlot",
     "m_ObjectId": "a8a9b867e7c04218acf3c68a38104bd8",
     "m_Id": 1,
@@ -8546,12 +8776,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.05999999865889549,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.009999999776482582,
         "y": 0.15000000596046449
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -8964,6 +9206,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 1.0,
         "g": 1.0,
@@ -9059,6 +9303,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 1.0,
         "g": 0.501960813999176,
@@ -9128,12 +9374,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.00009999999747378752,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.00009999999747378752,
         "y": 0.029999999329447748
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -9300,6 +9558,9 @@
             "m_Id": "3262e2fa08544b1093633159dfbb9cb3"
         },
         {
+            "m_Id": "2355fee4a1474a9292842e399393b5b3"
+        },
+        {
             "m_Id": "31f9087ccae6452f8e4322b2c4357d12"
         }
     ],
@@ -9318,7 +9579,7 @@
     "m_FunctionName": "GetPlayerBorderColor",
     "m_FunctionSource": "",
     "m_FunctionSourceUsePragmas": true,
-    "m_FunctionBody": "// This is the content for the \"Body\" field of the Custom Function node.\r\n// Assumes BlendWidth is a float input to the Custom Function node.\r\n\r\n{\r\n\tfloat4 initialPlayerColors[8];\r\n\tinitialPlayerColors[0] = C1; initialPlayerColors[1] = C2;\r\n\tinitialPlayerColors[2] = C3; initialPlayerColors[3] = C4;\r\n\tinitialPlayerColors[4] = C5; initialPlayerColors[5] = C6;\r\n\tinitialPlayerColors[6] = C7; initialPlayerColors[7] = C8;\r\n\r\n\tfloat4 colorsForBlending[8];\r\n\tfloat effectiveAngleForLogic;\r\n\tint numSides = (int)Sides;\r\n\r\n\tfor(int i=0; i<8; ++i) { colorsForBlending[i] = initialPlayerColors[0]; } // Default fallback\r\n\r\n\tif (abs(Sides - 4.0) < 0.01) // Special case for 4 players\r\n\t{\r\n\t    // This is the color order that you said \"blue, purple, orange, yellow\" CCW from blue (P1) at bottom\r\n\t    // P1 (Blue) at Bottom\r\n\t    // P4 (Purple) at Right (next CCW)\r\n\t    // P2 (Orange) at Top (next CCW)\r\n\t    // P3 (Yellow) at Left (next CCW)\r\n\t    colorsForBlending[0] = initialPlayerColors[0]; // P1 \r\n\t    colorsForBlending[1] = initialPlayerColors[3]; // P4 \r\n\t    colorsForBlending[2] = initialPlayerColors[1]; // P2\r\n\t    colorsForBlending[3] = initialPlayerColors[2]; // P3\r\n    \r\n\t    effectiveAngleForLogic = NormAngle; // Your successful finding for 4-player angle\r\n\t}\r\n\telse // For 3, 5, 6, 7, 8 players\r\n\t{\r\n\t    // Players C1, C2, C3... \r\n\t    for (int i = 0; i < numSides; ++i) {\r\n\t        if (i < 8) colorsForBlending[i] = initialPlayerColors[i];\r\n\t    }\r\n\t    if (numSides > 0 && numSides < 8) { // Fill unused slots for safety\r\n\t         for (int i = numSides; i < 8; ++i) {\r\n\t            colorsForBlending[i] = initialPlayerColors[0]; \r\n\t        }\r\n\t    }\r\n    \r\n\t    // REVISED ANGLE LOGIC for N-players (Sides != 4):\r\n\t    // Aim: If C1 is currently at Right, and order is CCW, this angle makes Right=0 and proceeds CCW.\r\n\t    effectiveAngleForLogic = NormAngle; \r\n\t    effectiveAngleForLogic = frac(effectiveAngleForLogic + 1.0); \r\n\t}\r\n\r\n\tif (numSides <= 0) {\r\n\t    OutColor = C1; \r\n\t    OutColor.a = 1.0;\r\n\t    return;\r\n\t}\r\n\r\n\tfloat scaledAngle = effectiveAngleForLogic * numSides;\r\n\r\n\tint colorBaseIndex = (int)floor(scaledAngle);\r\n\tfloat segmentLerpFactor = frac(scaledAngle);\r\n\r\n\tfloat halfBlendWidth = BlendWidth * 0.5;\r\n\thalfBlendWidth = max(halfBlendWidth, 0.0001); \r\n\tfloat sharpenedFactor = smoothstep(0.5 - halfBlendWidth, 0.5 + halfBlendWidth, segmentLerpFactor);\r\n\r\n\tint actualIndex1 = (colorBaseIndex % numSides + numSides) % numSides; \r\n\tint actualIndex2 = ((colorBaseIndex + 1) % numSides + numSides) % numSides; \r\n\r\n\tint maxValidIndex = min(numSides - 1, 7);\r\n\tactualIndex1 = clamp(actualIndex1, 0, maxValidIndex);\r\n\tactualIndex2 = clamp(actualIndex2, 0, maxValidIndex);\r\n\r\n\tOutColor = lerp(colorsForBlending[actualIndex1], colorsForBlending[actualIndex2], sharpenedFactor);\r\n\r\n\t// ====== Precise Active Player Highlight Logic ======\r\n\r\n\tbool isActiveSegment = false;\r\n\r\n          // Correct Offset Logic for all player counts\r\n          float highlightOffset = 1.0 / Sides;\r\n          effectiveAngleForLogic = frac(NormAngle - (0.5 / Sides) + highlightOffset);\r\n\r\n\tif (ActivePlayerIdx >= 0 && ActivePlayerIdx < numSides)\r\n\t{\r\n\t\tint mappedIndex = ActivePlayerIdx;\r\n\r\n\r\n\t\t// Custom player position mapping for 4-player game:\r\n\t\tif (abs(Sides - 4.0) < 0.01)\r\n\t\t{\r\n\t\t    if (ActivePlayerIdx == 0) mappedIndex = 0;  // P1 bottom\r\n\t\t    else if (ActivePlayerIdx == 1) mappedIndex = 2;  // P2 top\r\n\t\t    else if (ActivePlayerIdx == 2) mappedIndex = 3;  // P3 right\r\n\t\t    else if (ActivePlayerIdx == 3) mappedIndex = 1;  // P4 left\r\n\t\t}\r\n\r\n\t\t// Precise angular check (corrected):\r\n\t\tfloat angle = frac(effectiveAngleForLogic);\r\n\t\tfloat segmentStart = (mappedIndex / (float)numSides);\r\n\t\tfloat segmentEnd = ((mappedIndex + 1) / (float)numSides);\r\n\r\n\t\tif (segmentStart < segmentEnd)\r\n\t\t    isActiveSegment = (angle >= segmentStart && angle < segmentEnd);\r\n\t\telse  // wrap-around segment (like player 1)\r\n\t\t    isActiveSegment = (angle >= segmentStart || angle < segmentEnd);\r\n\t}\r\n\r\n\tif (isActiveSegment)\r\n\t{\r\n\t\tfloat correctedSLF = frac(segmentLerpFactor - 0.5);\r\n\r\n\t\tif (HighlightMode < 0.5)\r\n\t\t{\r\n\t\t    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 1.5);\r\n\t\t}\r\n\t\telse if (HighlightMode < 1.5)\r\n\t\t{\r\n\t\t    float pattern = step(0.6, frac(correctedSLF * 15.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, pattern * PatternIntensity * 1.5);\r\n\t\t}\r\n\t\telse if (HighlightMode < 2.5)\r\n\t\t{\r\n\t\t    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); \r\n\t\t    float animatedPattern = step(0.6, frac(correctedSLF * 15.0 + animOffset * 15.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 1.5);\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 0.7); \r\n    \r\n\t\t    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); \r\n\t\t    float animatedPattern = step(0.7, frac(correctedSLF * 12.0 + animOffset * 12.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 0.8);\r\n    \r\n\t\t    float pulse = 0.5 + 0.5 * sin(_Time.y * max(0.2, AnimationSpeed) * 2.0);\r\n\t\t    OutColor.rgb *= 1.0 + (BrightnessPulseIntensity * pulse);\r\n\t\t}\r\n\t}\r\n}\r\n"
+    "m_FunctionBody": "// This is the content for the \"Body\" field of the Custom Function node.\r\n// Assumes BlendWidth is a float input and Linear is a boolean input to the Custom Function node.\r\n\r\n{\r\n\tfloat4 initialPlayerColors[8];\r\n\tinitialPlayerColors[0] = C1; initialPlayerColors[1] = C2;\r\n\tinitialPlayerColors[2] = C3; initialPlayerColors[3] = C4;\r\n\tinitialPlayerColors[4] = C5; initialPlayerColors[5] = C6;\r\n\tinitialPlayerColors[6] = C7; initialPlayerColors[7] = C8;\r\n\r\n\tfloat4 colorsForBlending[8];\r\n\tfloat effectiveAngleForLogic;\r\n\tint numSides = (int)Sides;\r\n\r\n\tfor(int i=0; i<8; ++i) { colorsForBlending[i] = initialPlayerColors[0]; } // Default fallback\r\n\r\n\tif (abs(Sides - 4.0) < 0.01) // Special case for 4 players\r\n\t{\r\n\t    // This is the color order that you said \"blue, purple, orange, yellow\" CCW from blue (P1) at bottom\r\n\t    // P1 (Blue) at Bottom\r\n\t    // P4 (Purple) at Right (next CCW)\r\n\t    // P2 (Orange) at Top (next CCW)\r\n\t    // P3 (Yellow) at Left (next CCW)\r\n\t    colorsForBlending[0] = initialPlayerColors[0]; // P1 \r\n\t    colorsForBlending[1] = initialPlayerColors[3]; // P4 \r\n\t    colorsForBlending[2] = initialPlayerColors[1]; // P2\r\n\t    colorsForBlending[3] = initialPlayerColors[2]; // P3\r\n    \r\n\t    effectiveAngleForLogic = NormAngle; // Your successful finding for 4-player angle\r\n\t}\r\n\telse if (abs(Sides - 8.0) < 0.01 && !Linear) // Special case for 8 players NON-LINEAR\r\n\t{\r\n\t    // Custom order: P1, P5, P4, P6, P2, P7, P3, P8\r\n\t    colorsForBlending[0] = initialPlayerColors[0]; // P1\r\n\t    colorsForBlending[1] = initialPlayerColors[4]; // P5\r\n\t    colorsForBlending[2] = initialPlayerColors[3]; // P4\r\n\t    colorsForBlending[3] = initialPlayerColors[5]; // P6\r\n\t    colorsForBlending[4] = initialPlayerColors[1]; // P2\r\n\t    colorsForBlending[5] = initialPlayerColors[6]; // P7\r\n\t    colorsForBlending[6] = initialPlayerColors[2]; // P3\r\n\t    colorsForBlending[7] = initialPlayerColors[7]; // P8\r\n    \r\n\t    effectiveAngleForLogic = NormAngle; \r\n\t    effectiveAngleForLogic = frac(effectiveAngleForLogic + 1.0);\r\n\t}\r\n\telse // For 3, 5, 6, 7, 8 players (linear mode or non-8 player counts)\r\n\t{\r\n\t    // Players C1, C2, C3... \r\n\t    for (int i = 0; i < numSides; ++i) {\r\n\t        if (i < 8) colorsForBlending[i] = initialPlayerColors[i];\r\n\t    }\r\n\t    if (numSides > 0 && numSides < 8) { // Fill unused slots for safety\r\n\t         for (int i = numSides; i < 8; ++i) {\r\n\t            colorsForBlending[i] = initialPlayerColors[0]; \r\n\t        }\r\n\t    }\r\n    \r\n\t    // REVISED ANGLE LOGIC for N-players (Sides != 4):\r\n\t    // Aim: If C1 is currently at Right, and order is CCW, this angle makes Right=0 and proceeds CCW.\r\n\t    effectiveAngleForLogic = NormAngle; \r\n\t    effectiveAngleForLogic = frac(effectiveAngleForLogic + 1.0); \r\n\t}\r\n\r\n\tif (numSides <= 0) {\r\n\t    OutColor = C1; \r\n\t    OutColor.a = 1.0;\r\n\t    return;\r\n\t}\r\n\r\n\tfloat scaledAngle = effectiveAngleForLogic * numSides;\r\n\r\n\tint colorBaseIndex = (int)floor(scaledAngle);\r\n\tfloat segmentLerpFactor = frac(scaledAngle);\r\n\r\n\tfloat halfBlendWidth = BlendWidth * 0.5;\r\n\thalfBlendWidth = max(halfBlendWidth, 0.0001); \r\n\tfloat sharpenedFactor = smoothstep(0.5 - halfBlendWidth, 0.5 + halfBlendWidth, segmentLerpFactor);\r\n\r\n\tint actualIndex1 = (colorBaseIndex % numSides + numSides) % numSides; \r\n\tint actualIndex2 = ((colorBaseIndex + 1) % numSides + numSides) % numSides; \r\n\r\n\tint maxValidIndex = min(numSides - 1, 7);\r\n\tactualIndex1 = clamp(actualIndex1, 0, maxValidIndex);\r\n\tactualIndex2 = clamp(actualIndex2, 0, maxValidIndex);\r\n\r\n\tOutColor = lerp(colorsForBlending[actualIndex1], colorsForBlending[actualIndex2], sharpenedFactor);\r\n\r\n\t// ====== Precise Active Player Highlight Logic ======\r\n\r\n\tbool isActiveSegment = false;\r\n\r\n          // Correct Offset Logic for all player counts\r\n          float highlightOffset = 1.0 / Sides;\r\n          effectiveAngleForLogic = frac(NormAngle - (0.5 / Sides) + highlightOffset);\r\n\r\n\tif (ActivePlayerIdx >= 0 && ActivePlayerIdx < numSides)\r\n\t{\r\n\t\tint mappedIndex = ActivePlayerIdx;\r\n\r\n\r\n\t\t// Custom player position mapping for 4-player game:\r\n\t\tif (abs(Sides - 4.0) < 0.01)\r\n\t\t{\r\n\t\t    if (ActivePlayerIdx == 0) mappedIndex = 0;  // P1 bottom\r\n\t\t    else if (ActivePlayerIdx == 1) mappedIndex = 2;  // P2 top\r\n\t\t    else if (ActivePlayerIdx == 2) mappedIndex = 3;  // P3 right\r\n\t\t    else if (ActivePlayerIdx == 3) mappedIndex = 1;  // P4 left\r\n\t\t}\r\n\t\t// Custom player position mapping for 8-player non-linear game:\r\n\t\telse if (abs(Sides - 8.0) < 0.01 && !Linear)\r\n\t\t{\r\n\t\t    // Reverse mapping: Player Index → Position in wheel\r\n\t\t    // P1→0, P2→4, P3→6, P4→2, P5→1, P6→3, P7→5, P8→7\r\n\t\t    if (ActivePlayerIdx == 0) mappedIndex = 0;      // P1\r\n\t\t    else if (ActivePlayerIdx == 1) mappedIndex = 4; // P2\r\n\t\t    else if (ActivePlayerIdx == 2) mappedIndex = 6; // P3\r\n\t\t    else if (ActivePlayerIdx == 3) mappedIndex = 2; // P4\r\n\t\t    else if (ActivePlayerIdx == 4) mappedIndex = 1; // P5\r\n\t\t    else if (ActivePlayerIdx == 5) mappedIndex = 3; // P6\r\n\t\t    else if (ActivePlayerIdx == 6) mappedIndex = 5; // P7\r\n\t\t    else if (ActivePlayerIdx == 7) mappedIndex = 7; // P8\r\n\t\t}\r\n\r\n\t\t// Precise angular check (corrected):\r\n\t\tfloat angle = frac(effectiveAngleForLogic);\r\n\t\tfloat segmentStart = (mappedIndex / (float)numSides);\r\n\t\tfloat segmentEnd = ((mappedIndex + 1) / (float)numSides);\r\n\r\n\t\tif (segmentStart < segmentEnd)\r\n\t\t    isActiveSegment = (angle >= segmentStart && angle < segmentEnd);\r\n\t\telse  // wrap-around segment (like player 1)\r\n\t\t    isActiveSegment = (angle >= segmentStart || angle < segmentEnd);\r\n\t}\r\n\r\n\tif (isActiveSegment)\r\n\t{\r\n\t\tfloat correctedSLF = frac(segmentLerpFactor - 0.5);\r\n\r\n\t\tif (HighlightMode < 0.5)\r\n\t\t{\r\n\t\t    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 1.5);\r\n\t\t}\r\n\t\telse if (HighlightMode < 1.5)\r\n\t\t{\r\n\t\t    float pattern = step(0.6, frac(correctedSLF * 15.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, pattern * PatternIntensity * 1.5);\r\n\t\t}\r\n\t\telse if (HighlightMode < 2.5)\r\n\t\t{\r\n\t\t    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); \r\n\t\t    float animatedPattern = step(0.6, frac(correctedSLF * 15.0 + animOffset * 15.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 1.5);\r\n\t\t}\r\n\t\telse\r\n\t\t{\r\n\t\t    OutColor = lerp(OutColor, GlowColor, GlowIntensity * 0.7); \r\n    \r\n\t\t    float animOffset = frac(_Time.y * max(0.05, AnimationSpeed) * 0.2); \r\n\t\t    float animatedPattern = step(0.7, frac(correctedSLF * 12.0 + animOffset * 12.0));\r\n\t\t    OutColor = lerp(OutColor, GlowColor, animatedPattern * PatternIntensity * 0.8);\r\n    \r\n\t\t    float pulse = 0.5 + 0.5 * sin(_Time.y * max(0.2, AnimationSpeed) * 2.0);\r\n\t\t    OutColor.rgb *= 1.0 + (BrightnessPulseIntensity * pulse);\r\n\t\t}\r\n\t}\r\n}"
 }
 
 {
@@ -9484,12 +9745,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.30000001192092898,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -9576,6 +9849,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 1.0,
         "g": 0.0,
@@ -11032,12 +11307,24 @@
     "overrideHLSLDeclaration": true,
     "hlslDeclarationOverride": 2,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.05999999865889549,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.009999999776482582,
         "y": 0.15000000596046449
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -11156,6 +11443,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 1.0,
         "g": 0.0,
@@ -11308,6 +11597,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.00894448533654213,
         "g": 0.009117759764194489,
@@ -11363,12 +11654,24 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 0.30000001192092898,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
         "y": 5.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -11475,6 +11778,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.0,
         "g": 0.7176470756530762,
@@ -11763,6 +12068,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.4707191288471222,
         "g": 0.6491295099258423,

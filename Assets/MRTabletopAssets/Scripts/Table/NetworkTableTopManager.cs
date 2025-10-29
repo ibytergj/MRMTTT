@@ -14,6 +14,12 @@ public class NetworkTableTopManager : NetworkBehaviour
     // NetworkVariable to track and synchronize the active player count / table shape
     private NetworkVariable<int> m_ActivePlayerCount = new NetworkVariable<int>(4, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    // NetworkVariable to track if table is locked to 8-player mode (set when 5th player joins)
+    private NetworkVariable<bool> m_Is8PlayerModeLocked = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    // NetworkVariable to track table scale factor (1.0 for 4-player, 2.0 for 8-player)
+    private NetworkVariable<float> m_TableScaleFactor = new NetworkVariable<float>(1.0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
     [SerializeField]
     TableSeatSystem m_SeatSystem;
 
@@ -21,6 +27,9 @@ public class NetworkTableTopManager : NetworkBehaviour
     TableTop m_TableTop;
 
     public TableTop tableTop => m_TableTop;
+
+    [SerializeField]
+    PlayerRepositionManager m_PlayerRepositionManager;
 
     [SerializeField]
     TableTopSeatButton[] m_SeatButtons;
@@ -109,8 +118,8 @@ public class NetworkTableTopManager : NetworkBehaviour
 
         if (!IsServer)
         {
-            Debug.Log($"{DEBUG_TAG}Client received updated player count: {newValue}, updating seat positions and shader components");
-            m_TableTop.UpdateSeatPositions(newValue);
+            Debug.Log($"{DEBUG_TAG}Client received updated player count: {newValue}, 8-player mode locked: {m_Is8PlayerModeLocked.Value}, updating seat positions and shader components");
+            m_TableTop.UpdateSeatPositions(newValue, m_Is8PlayerModeLocked.Value);
 
             // Update shader components with new player count
             UpdateShaderComponents(newValue);
@@ -167,7 +176,14 @@ public class NetworkTableTopManager : NetworkBehaviour
             // Determine how many seats to show based on occupied seats
             int seatsToShow;
 
-            if (occupiedSeatCount <= 4)
+            // Check if 8-player mode is locked (happens when 5th player joins)
+            if (m_Is8PlayerModeLocked.Value)
+            {
+                // Once locked to 8-player mode, always use 8 seats
+                seatsToShow = 8;
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - 8-player mode is LOCKED, using 8-player layout");
+            }
+            else if (occupiedSeatCount <= 4)
             {
                 // For 1-4 players, use the standard 4-player layout
                 seatsToShow = 4;
@@ -175,11 +191,22 @@ public class NetworkTableTopManager : NetworkBehaviour
             }
             else
             {
-                // For 5-8 players, use the exact number of players
-                // This creates a pentagon for 5, hexagon for 6, etc.
-                seatsToShow = occupiedSeatCount;
-                seatsToShow = Mathf.Min(8, seatsToShow); // Cap at 8 players
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using {seatsToShow}-player layout (regular polygon)");
+                // When 5th player joins, lock to 8-player mode permanently
+                seatsToShow = 8;
+
+                // Check if this is the first time locking (5th player just joined)
+                bool wasJustLocked = !m_Is8PlayerModeLocked.Value;
+
+                m_Is8PlayerModeLocked.Value = true;
+                m_TableScaleFactor.Value = 2.0f;
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - 5th player joined! LOCKING to 8-player mode, setting scale factor to 2.0");
+
+                // Trigger table expansion RPC to reposition existing players
+                if (wasJustLocked)
+                {
+                    Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - First time locking, triggering table expansion RPC");
+                    TriggerTableExpansionRpc();
+                }
             }
 
             // Only update if the player count has changed
@@ -192,8 +219,8 @@ public class NetworkTableTopManager : NetworkBehaviour
                 m_ActivePlayerCount.Value = seatsToShow;
 
                 // Update local table
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling m_TableTop.UpdateSeatPositions({seatsToShow})");
-                m_TableTop.UpdateSeatPositions(seatsToShow);
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling m_TableTop.UpdateSeatPositions({seatsToShow}, force8PlayerMode: {m_Is8PlayerModeLocked.Value})");
+                m_TableTop.UpdateSeatPositions(seatsToShow, m_Is8PlayerModeLocked.Value);
 
                 // Update VirtualSurfaceColorShaderUpdater components with new player count
                 Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling UpdateShaderComponents({seatsToShow})");
@@ -582,6 +609,44 @@ public class NetworkTableTopManager : NetworkBehaviour
     public void TeleportToSpectatorSeat()
     {
         RequestSeat(-1);
+    }
+
+    /// <summary>
+    /// Gets whether the table is locked to 8-player mode.
+    /// </summary>
+    public bool Is8PlayerModeLocked()
+    {
+        return m_Is8PlayerModeLocked.Value;
+    }
+
+    /// <summary>
+    /// Gets the current table scale factor (1.0 for 4-player, 2.0 for 8-player).
+    /// </summary>
+    public float GetTableScaleFactor()
+    {
+        return m_TableScaleFactor.Value;
+    }
+
+    /// <summary>
+    /// Triggers table expansion to 8-player mode on all clients.
+    /// Called when 5th player joins to reposition existing players 1-4.
+    /// </summary>
+    [Rpc(SendTo.Everyone)]
+    private void TriggerTableExpansionRpc()
+    {
+        Debug.Log($"{DEBUG_TAG}TriggerTableExpansionRpc - Triggering table expansion on client {NetworkManager.Singleton.LocalClientId}");
+
+        // Only reposition players who are already seated (players 1-4)
+        // New players (5-8) will spawn directly at correct positions
+        if (m_PlayerRepositionManager != null)
+        {
+            Debug.Log($"{DEBUG_TAG}TriggerTableExpansionRpc - Calling PlayerRepositionManager.RepositionPlayerWithFade()");
+            m_PlayerRepositionManager.RepositionPlayerWithFade();
+        }
+        else
+        {
+            Debug.LogError($"{DEBUG_TAG}TriggerTableExpansionRpc - PlayerRepositionManager is null!");
+        }
     }
 }
 
