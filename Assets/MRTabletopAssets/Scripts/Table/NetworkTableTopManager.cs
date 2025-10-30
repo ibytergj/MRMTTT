@@ -11,8 +11,12 @@ public class NetworkTableTopManager : NetworkBehaviour
 
     public NetworkList<NetworkedSeat> networkedSeats;
 
-    // NetworkVariable to track and synchronize the active player count / table shape
-    private NetworkVariable<int> m_ActivePlayerCount = new NetworkVariable<int>(4, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    /// <summary>
+    /// NetworkVariable to track and synchronize the seat count (4 or 8 seats to show).
+    /// This represents the table configuration/shape, NOT the actual number of active players.
+    /// Use CountOccupiedSeats() to get the actual player count (1-8).
+    /// </summary>
+    private NetworkVariable<int> m_SeatCount = new NetworkVariable<int>(4, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     // NetworkVariable to track if table is locked to 8-player mode (set when 5th player joins)
     private NetworkVariable<bool> m_Is8PlayerModeLocked = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -45,8 +49,8 @@ public class NetworkTableTopManager : NetworkBehaviour
 
         Debug.Log($"{DEBUG_TAG}OnNetworkSpawn - IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, NetworkManager.IsListening: {NetworkManager.Singleton.IsListening}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
-        // Subscribe to the active player count changes
-        m_ActivePlayerCount.OnValueChanged += OnActivePlayerCountChanged;
+        // Subscribe to seat count changes
+        m_SeatCount.OnValueChanged += OnSeatCountChanged;
 
         if (IsServer)
         {
@@ -58,20 +62,31 @@ public class NetworkTableTopManager : NetworkBehaviour
                 Debug.Log($"{DEBUG_TAG}Added empty seat at index {i}");
             }
 
-            // Initialize seat positions based on active player count
-            // Start with 4 seats by default
+            // Initialize seat positions - start with 4-seat configuration by default
             int seatsToShow = 4;
 
-            // For now, we'll just use the default 4-player layout
-            // In a real implementation, you would determine the actual player count
-
             Debug.Log($"{DEBUG_TAG}Server initializing {seatsToShow} seats");
-            m_ActivePlayerCount.Value = seatsToShow; // Set the NetworkVariable
+            m_SeatCount.Value = seatsToShow; // Set the NetworkVariable
             m_TableTop.UpdateSeatPositions(seatsToShow);
         }
         else
         {
-            Debug.Log($"{DEBUG_TAG}Client received active player count: {m_ActivePlayerCount.Value}");
+            // Client initialization - handle initial seat count synchronization
+            int initialSeatCount = m_SeatCount.Value;
+            Debug.Log($"{DEBUG_TAG}Client received initial seat count: {initialSeatCount}, 8-player mode locked: {m_Is8PlayerModeLocked.Value}");
+
+            // Update seat positions based on initial synchronized value
+            m_TableTop.UpdateSeatPositions(initialSeatCount, m_Is8PlayerModeLocked.Value);
+
+            // Update shader components with initial seat count
+            UpdateShaderComponents(initialSeatCount);
+
+            // If 8-player mode is locked, scale the table locally for late-joining clients
+            if (m_Is8PlayerModeLocked.Value && m_PlayerRepositionManager != null)
+            {
+                Debug.Log($"{DEBUG_TAG}OnNetworkSpawn - 8-player mode locked, scaling table objects locally for late-joining client");
+                m_PlayerRepositionManager.ScaleTableObjectsOnly();
+            }
         }
 
         Debug.Log($"{DEBUG_TAG}Updating networked seats visuals");
@@ -92,8 +107,8 @@ public class NetworkTableTopManager : NetworkBehaviour
     {
         base.OnNetworkDespawn();
 
-        // Unsubscribe from the active player count changes
-        m_ActivePlayerCount.OnValueChanged -= OnActivePlayerCountChanged;
+        // Unsubscribe from seat count changes
+        m_SeatCount.OnValueChanged -= OnSeatCountChanged;
 
         foreach (var seatButton in m_SeatButtons)
         {
@@ -111,22 +126,32 @@ public class NetworkTableTopManager : NetworkBehaviour
         UpdateNetworkedSeatsVisuals();
     }
 
-    // Handle changes to the active player count NetworkVariable
-    private void OnActivePlayerCountChanged(int previousValue, int newValue)
+    /// <summary>
+    /// Handle changes to the seat count NetworkVariable.
+    /// This callback fires on clients when the server changes the seat count (4 or 8).
+    /// </summary>
+    private void OnSeatCountChanged(int previousValue, int newValue)
     {
-        Debug.Log($"{DEBUG_TAG}OnActivePlayerCountChanged - Previous: {previousValue}, New: {newValue}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
+        Debug.Log($"{DEBUG_TAG}OnSeatCountChanged - Previous seat count: {previousValue}, New seat count: {newValue}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
         if (!IsServer)
         {
-            Debug.Log($"{DEBUG_TAG}Client received updated player count: {newValue}, 8-player mode locked: {m_Is8PlayerModeLocked.Value}, updating seat positions and shader components");
+            Debug.Log($"{DEBUG_TAG}Client received updated seat count: {newValue}, 8-player mode locked: {m_Is8PlayerModeLocked.Value}, updating seat positions and shader components");
             m_TableTop.UpdateSeatPositions(newValue, m_Is8PlayerModeLocked.Value);
 
-            // Update shader components with new player count
+            // Update shader components with new seat count
             UpdateShaderComponents(newValue);
+
+            // If 8-player mode is locked, scale the table locally for late-joining clients
+            if (m_Is8PlayerModeLocked.Value && m_PlayerRepositionManager != null)
+            {
+                Debug.Log($"{DEBUG_TAG}OnSeatCountChanged - 8-player mode locked, scaling table objects locally for late-joining client");
+                m_PlayerRepositionManager.ScaleTableObjectsOnly();
+            }
         }
         else
         {
-            Debug.Log($"{DEBUG_TAG}Server received active player count change notification (this is unexpected)");
+            Debug.Log($"{DEBUG_TAG}Server received seat count change notification (this is unexpected)");
         }
     }
 
@@ -170,8 +195,8 @@ public class NetworkTableTopManager : NetworkBehaviour
         if (IsServer && m_TableTop != null)
         {
             int occupiedSeatCount = CountOccupiedSeats();
-            int previousPlayerCount = m_ActivePlayerCount.Value;
-            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Occupied seat count: {occupiedSeatCount}, Previous player count: {previousPlayerCount}");
+            int previousSeatCount = m_SeatCount.Value;
+            Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Occupied seat count (actual players): {occupiedSeatCount}, Previous seat count (table config): {previousSeatCount}");
 
             // Determine how many seats to show based on occupied seats
             int seatsToShow;
@@ -181,13 +206,13 @@ public class NetworkTableTopManager : NetworkBehaviour
             {
                 // Once locked to 8-player mode, always use 8 seats
                 seatsToShow = 8;
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - 8-player mode is LOCKED, using 8-player layout");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - 8-player mode is LOCKED, using 8-seat layout");
             }
             else if (occupiedSeatCount <= 4)
             {
-                // For 1-4 players, use the standard 4-player layout
+                // For 1-4 players, use the standard 4-seat layout
                 seatsToShow = 4;
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using standard 4-player layout (fixed positions)");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Using standard 4-seat layout");
             }
             else
             {
@@ -209,37 +234,37 @@ public class NetworkTableTopManager : NetworkBehaviour
                 }
             }
 
-            // Only update if the player count has changed
-            if (seatsToShow != previousPlayerCount)
+            // Only update if the seat count has changed
+            if (seatsToShow != previousSeatCount)
             {
-                Debug.Log($"{DEBUG_TAG}Updating seat positions for {seatsToShow} seats (occupied seats: {occupiedSeatCount})");
+                Debug.Log($"{DEBUG_TAG}Updating seat positions for {seatsToShow} seats (actual occupied seats: {occupiedSeatCount})");
 
                 // Update the NetworkVariable to synchronize to clients
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Setting m_ActivePlayerCount.Value from {previousPlayerCount} to {seatsToShow}");
-                m_ActivePlayerCount.Value = seatsToShow;
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Setting m_SeatCount.Value from {previousSeatCount} to {seatsToShow}");
+                m_SeatCount.Value = seatsToShow;
 
                 // Update local table
                 Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling m_TableTop.UpdateSeatPositions({seatsToShow}, force8PlayerMode: {m_Is8PlayerModeLocked.Value})");
                 m_TableTop.UpdateSeatPositions(seatsToShow, m_Is8PlayerModeLocked.Value);
 
-                // Update VirtualSurfaceColorShaderUpdater components with new player count
+                // Update VirtualSurfaceColorShaderUpdater components with new seat count
                 Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Calling UpdateShaderComponents({seatsToShow})");
                 UpdateShaderComponents(seatsToShow);
 
-                // If transitioning between 4-player and 5+ player modes, reposition all players
-                if ((previousPlayerCount <= 4 && seatsToShow > 4) ||
-                    (previousPlayerCount > 4 && seatsToShow <= 4))
+                // If transitioning between 4-seat and 8-seat modes, reposition all players
+                if ((previousSeatCount <= 4 && seatsToShow > 4) ||
+                    (previousSeatCount > 4 && seatsToShow <= 4))
                 {
-                    Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Transitioning between 4-player and 5+ player modes, repositioning all players");
+                    Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Transitioning between 4-seat and 8-seat modes, repositioning all players");
                     RepositionAllPlayers();
                 }
 
                 // Log the current NetworkVariable value to verify it was updated
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - After update: m_ActivePlayerCount.Value = {m_ActivePlayerCount.Value}");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - After update: m_SeatCount.Value = {m_SeatCount.Value}");
             }
             else
             {
-                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Player count unchanged ({seatsToShow}), skipping update");
+                Debug.Log($"{DEBUG_TAG}UpdateSeatPositionsBasedOnPlayerCount - Seat count unchanged ({seatsToShow}), skipping update");
             }
 
             // Update active player index in PlayerColorManager if available
@@ -289,7 +314,9 @@ public class NetworkTableTopManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Updates all VirtualSurfaceColorShaderUpdater components with the new player count.
+    /// Updates all VirtualSurfaceColorShaderUpdater components with the new seat count.
+    /// Note: The parameter is named 'playerCount' for compatibility with the shader updater API,
+    /// but it actually represents the seat count (4 or 8), not the actual number of players.
     /// </summary>
     private void UpdateShaderComponents(int playerCount)
     {
@@ -426,14 +453,15 @@ public class NetworkTableTopManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Gets the network-synchronized player count for use by other components.
-    /// This is the authoritative player count that determines seat positioning.
+    /// Gets the network-synchronized seat count for use by other components.
+    /// This returns the table configuration (4 or 8 seats), NOT the actual number of active players.
+    /// Use CountOccupiedSeats() to get the actual player count (1-8).
     /// </summary>
-    /// <returns>The network-synchronized player count</returns>
-    public int GetNetworkSynchronizedPlayerCount()
+    /// <returns>The network-synchronized seat count (4 or 8)</returns>
+    public int GetNetworkSynchronizedSeatCount()
     {
-        int result = m_ActivePlayerCount.Value;
-        Debug.Log($"{DEBUG_TAG}GetNetworkSynchronizedPlayerCount - Returning {result}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}");
+        int result = m_SeatCount.Value;
+        Debug.Log($"{DEBUG_TAG}GetNetworkSynchronizedSeatCount - Returning seat count: {result}, IsServer: {IsServer}, IsClient: {IsClient}, IsHost: {IsHost}");
         return result;
     }
 

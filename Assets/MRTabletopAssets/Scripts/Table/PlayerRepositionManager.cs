@@ -173,9 +173,9 @@ namespace MRTabletopAssets
             Debug.Log($"{DEBUG_TAG}Scaling GameObjects to 2.0...");
             ScaleGameObjects(2.0f);
 
-            // 3. Move GameObjects radially outward (Table UI, Manipulators, HandleVisual)
-            Debug.Log($"{DEBUG_TAG}Moving GameObjects radially outward by 0.75f...");
-            MoveGameObjectsRadially(0.75f);
+            // 3. Position GameObjects based on seat (Table UI, Manipulators, HandleVisual)
+            Debug.Log($"{DEBUG_TAG}Positioning GameObjects based on current seat...");
+            PositionGameObjectsForCurrentSeat();
 
             // 4. Calculate and apply XR Origin radial movement
             Debug.Log($"{DEBUG_TAG}Calculating XR Origin radial movement...");
@@ -214,15 +214,107 @@ namespace MRTabletopAssets
             }
         }
 
-        private void MoveGameObjectsRadially(float distance)
+        private void PositionGameObjectsForCurrentSeat()
         {
-            MoveRadially(m_TableUI, distance, "Table UI", preserveY: true);
-            MoveRadially(m_TableManipulatorRotation, distance, "TableManipulator - Only Rotation", preserveY: false);
-            MoveRadially(m_TableManipulatorFreeMove, distance, "TableManipulator - Free Move", preserveY: false);
-            MoveRadially(m_HandleVisual, distance, "HandleVisual", preserveY: false);
+            // All objects use seat-based positioning (not radial movement from current position)
+            // Table UI is positioned at the exact user-specified positions
+            PositionTableUIForCurrentSeat();
+
+            // Manipulator handles are positioned slightly closer to table than UI so player can reach them
+            PositionManipulatorHandlesForCurrentSeat();
         }
 
-        private void MoveRadially(Transform obj, float distance, string objectName, bool preserveY = false)
+        private void PositionTableUIForCurrentSeat()
+        {
+            if (m_TableUI == null)
+            {
+                Debug.LogWarning($"{DEBUG_TAG}Table UI is null, cannot position");
+                return;
+            }
+
+            // Get current seat number from TableTop
+            int currentSeat = TableTop.k_CurrentSeat;
+            if (currentSeat < 0 || currentSeat >= 8)
+            {
+                Debug.LogWarning($"{DEBUG_TAG}Invalid current seat: {currentSeat}, cannot position Table UI");
+                return;
+            }
+
+            // Exact positions and rotations for 8-player mode (provided by user)
+            // Format: (x, y, z, rotation)
+            Vector4[] tableUIPositions = new Vector4[]
+            {
+                new Vector4(0f, 0.001f, -0.55f, 0f),      // Seat 0 (Player 1)
+                new Vector4(0f, 0.001f, 0.55f, 180f),   // Seat 1 (Player 2)
+                new Vector4(0.55f, 0.001f, 0f, 270f),   // Seat 2 (Player 3)
+                new Vector4(-0.55f, 0.001f, 0f, 90f),     // Seat 3 (Player 4)
+                new Vector4(-0.4f, 0.001f, -0.4f, 45f),  // Seat 4 (Player 5)
+                new Vector4(-0.4f, 0.001f, 0.4f, 135f),  // Seat 5 (Player 6)
+                new Vector4(0.4f, 0.001f, 0.4f, 225f),   // Seat 6 (Player 7)
+                new Vector4(0.4f, 0.001f, -0.4f, 315f)   // Seat 7 (Player 8)
+            };
+
+            Vector4 posRot = tableUIPositions[currentSeat];
+            Vector3 newPos = new Vector3(posRot.x, posRot.y, posRot.z);
+            float rotation = posRot.w;
+
+            m_TableUI.position = newPos;
+            m_TableUI.rotation = Quaternion.Euler(0, rotation, 0);
+
+            Debug.Log($"{DEBUG_TAG}Positioned Table UI for seat {currentSeat} at {newPos}, rotation: {rotation}°");
+        }
+
+        private void PositionManipulatorHandlesForCurrentSeat()
+        {
+            // Get current seat number from TableTop
+            int currentSeat = TableTop.k_CurrentSeat;
+            if (currentSeat < 0 || currentSeat >= 8)
+            {
+                Debug.LogWarning($"{DEBUG_TAG}Invalid current seat: {currentSeat}, cannot position manipulator handles");
+                return;
+            }
+
+            // Manipulator handle positions - slightly closer to table than UI (0.55 vs 0.65 for cardinal, 0.35 vs 0.4 for diagonal)
+            // Format: (x, y, z, rotation)
+            Vector4[] handlePositions = new Vector4[]
+            {
+                new Vector4(0f, 0.001f, -.45f, 0f),      // Seat 0 (Player 1)
+                new Vector4(0f, 0.001f, 0.45f, 180f),   // Seat 1 (Player 2)
+                new Vector4(0.45f, 0.001f, 0f, 270f),   // Seat 2 (Player 3)
+                new Vector4(-0.45f, 0.001f, 0f, 90f),     // Seat 3 (Player 4)
+                new Vector4(-0.3f, 0.001f, -0.3f, 45f),  // Seat 4 (Player 5)
+                new Vector4(-0.3f, 0.001f, 0.3f, 135f),  // Seat 5 (Player 6)
+                new Vector4(0.3f, 0.001f, 0.3f, 225f),   // Seat 6 (Player 7)
+                new Vector4(0.3f, 0.001f, -0.3f, 315f)   // Seat 7 (Player 8)
+            };
+
+            Vector4 posRot = handlePositions[currentSeat];
+            Vector3 newPos = new Vector3(posRot.x, posRot.y, posRot.z);
+            float rotation = posRot.w;
+
+            // Position all three manipulator handles at the same location
+            if (m_TableManipulatorRotation != null)
+            {
+                m_TableManipulatorRotation.position = newPos;
+                m_TableManipulatorRotation.rotation = Quaternion.Euler(0, rotation, 0);
+            }
+
+            if (m_TableManipulatorFreeMove != null)
+            {
+                m_TableManipulatorFreeMove.position = newPos;
+                m_TableManipulatorFreeMove.rotation = Quaternion.Euler(0, rotation, 0);
+            }
+
+            if (m_HandleVisual != null)
+            {
+                m_HandleVisual.position = newPos;
+                m_HandleVisual.rotation = Quaternion.Euler(0, rotation, 0);
+            }
+
+            Debug.Log($"{DEBUG_TAG}Positioned manipulator handles for seat {currentSeat} at {newPos}, rotation: {rotation}°");
+        }
+
+        private void MoveRadially(Transform obj, float distance, string objectName)
         {
             if (obj == null)
             {
@@ -231,26 +323,18 @@ namespace MRTabletopAssets
             }
 
             Vector3 currentPos = obj.position;
-            Vector3 direction = (currentPos - m_TableCenter).normalized;
 
-            // If preserveY is true, only move in the XZ plane
-            if (preserveY)
-            {
-                // Zero out the Y component of the direction to move only horizontally
-                direction.y = 0f;
-                direction.Normalize();
-            }
+            // Calculate direction in XZ plane only (preserve Y)
+            Vector3 currentPosXZ = new Vector3(currentPos.x, m_TableCenter.y, currentPos.z);
+            Vector3 tableCenterXZ = new Vector3(m_TableCenter.x, m_TableCenter.y, m_TableCenter.z);
+            Vector3 directionXZ = (currentPosXZ - tableCenterXZ).normalized;
 
-            Vector3 newPos = currentPos + (direction * distance);
-
-            // If preserveY is true, restore the original Y value
-            if (preserveY)
-            {
-                newPos.y = currentPos.y;
-            }
+            // Move only in XZ plane, preserve Y
+            Vector3 newPos = currentPos + (directionXZ * distance);
+            newPos.y = currentPos.y; // Explicitly preserve Y
 
             obj.position = newPos;
-            Debug.Log($"{DEBUG_TAG}Moved {objectName} radially from {currentPos} to {newPos} (direction: {direction}, distance: {distance}, preserveY: {preserveY})");
+            Debug.Log($"{DEBUG_TAG}Moved {objectName} radially from {currentPos} to {newPos} (directionXZ: {directionXZ}, distance: {distance})");
         }
 
         private void MoveXROriginRadially(float distance)
@@ -267,6 +351,23 @@ namespace MRTabletopAssets
 
             m_XROrigin.transform.position = newPos;
             Debug.Log($"{DEBUG_TAG}Moved XR Origin radially from {currentPos} to {newPos} (direction: {direction}, distance: {distance})");
+        }
+
+        /// <summary>
+        /// Scales table objects only (without vignette or player repositioning).
+        /// Used for late-joining clients who join after the table has already expanded to 8-player mode.
+        /// </summary>
+        public void ScaleTableObjectsOnly()
+        {
+            Debug.Log($"{DEBUG_TAG}ScaleTableObjectsOnly - Scaling table objects for late-joining client");
+
+            // Scale GameObjects (TableTop, Hover Visuals, PassthroughVolume)
+            ScaleGameObjects(2.0f);
+
+            // Position Table UI for the current seat (late-joining clients need this too)
+            PositionTableUIForCurrentSeat();
+
+            Debug.Log($"{DEBUG_TAG}ScaleTableObjectsOnly - Complete");
         }
     }
 }

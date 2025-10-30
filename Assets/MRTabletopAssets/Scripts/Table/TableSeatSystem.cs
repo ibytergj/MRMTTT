@@ -120,7 +120,9 @@ public class TableSeatSystem : MonoBehaviour
         }
     }
 
-    float GetRotationAngleBasedOnSeatNum(int seatNum)
+
+
+    public float GetRotationAngleBasedOnSeatNum(int seatNum)
     {
         Debug.Log($"{DEBUG_TAG}GetRotationAngleBasedOnSeatNum - Seat number: {seatNum}, BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
@@ -160,27 +162,28 @@ public class TableSeatSystem : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the number of active players based on the network-synchronized player count.
+    /// Gets the seat count (4 or 8) based on the network-synchronized seat configuration.
+    /// This represents the table layout, NOT the actual number of players.
     /// Falls back to counting active seat transforms if network data is unavailable.
     /// </summary>
     private int GetActivePlayerCount()
     {
         Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - BuildType: {(Application.isEditor ? "Editor" : "Build")}");
 
-        // First try to get the network-synchronized player count
+        // First try to get the network-synchronized seat count (4 or 8)
         if (m_NetworkTableTopManager != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
-            // Access the ActivePlayerCount from NetworkTableTopManager
-            int networkPlayerCount = m_NetworkTableTopManager.GetNetworkSynchronizedPlayerCount();
+            // Access the seat count from NetworkTableTopManager (4 or 8 seats for table layout)
+            int networkSeatCount = m_NetworkTableTopManager.GetNetworkSynchronizedSeatCount();
 
-            if (networkPlayerCount > 0)
+            if (networkSeatCount > 0)
             {
-                Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - Using network-synchronized player count: {networkPlayerCount}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
-                return networkPlayerCount;
+                Debug.Log($"{DEBUG_TAG}GetActivePlayerCount - Using network-synchronized seat count: {networkSeatCount}, IsServer: {NetworkManager.Singleton.IsServer}, IsClient: {NetworkManager.Singleton.IsClient}");
+                return networkSeatCount;
             }
             else
             {
-                Debug.LogWarning($"{DEBUG_TAG}GetActivePlayerCount - Network player count is invalid ({networkPlayerCount}), falling back to local count");
+                Debug.LogWarning($"{DEBUG_TAG}GetActivePlayerCount - Network seat count is invalid ({networkSeatCount}), falling back to local count");
             }
         }
         else

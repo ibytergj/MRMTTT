@@ -100,6 +100,7 @@ namespace XRMultiplayer
 
             // Cache PlayerId.
             XRINetworkGameManager.AuthenicationId = AuthenticationService.Instance.PlayerId;
+            Utils.Log($"{k_DebugPrepend}Signing in with AuthenicationId {XRINetworkGameManager.AuthenicationId}");
             return UnityServices.State == ServicesInitializationState.Initialized;
         }
 

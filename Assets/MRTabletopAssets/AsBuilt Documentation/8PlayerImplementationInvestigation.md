@@ -73,25 +73,25 @@ private void UpdateSeatPositionsBasedOnPlayerCount()
     if (IsServer && m_TableTop != null)
     {
         int occupiedSeatCount = CountOccupiedSeats();
-        int previousPlayerCount = m_ActivePlayerCount.Value;
-        
+        int previousSeatCount = m_SeatCount.Value;
+
         // Determine how many seats to show
         int seatsToShow;
         if (occupiedSeatCount <= 4)
         {
-            // For 1-4 players, use the standard 4-player layout
+            // For 1-4 players, use the standard 4-seat layout
             seatsToShow = 4;
         }
         else
         {
-            // For 5-8 players, use the exact number of players
-            seatsToShow = Mathf.Min(8, occupiedSeatCount);
+            // For 5-8 players, use 8-seat layout
+            seatsToShow = 8;
         }
-        
-        // Only update if the player count has changed
-        if (seatsToShow != previousPlayerCount)
+
+        // Only update if the seat count has changed
+        if (seatsToShow != previousSeatCount)
         {
-            m_ActivePlayerCount.Value = seatsToShow;
+            m_SeatCount.Value = seatsToShow;
             m_TableTop.UpdateSeatPositions(seatsToShow);
             // ...
         }
