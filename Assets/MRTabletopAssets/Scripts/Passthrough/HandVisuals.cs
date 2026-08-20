@@ -1,20 +1,53 @@
-using UnityEngine;
-using UnityLabs.Slices.Systems;
-using XRMultiplayer;
+using System.Collections.Generic;
 
-namespace UnityLabs.Slices.Passthrough
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Manages the visuals for hand rendering, applying passthrough and related effects to all shared materials.
     /// </summary>
     public class HandVisuals : MonoBehaviour
     {
-        [SerializeField] Renderer m_LeftHandRenderer;
-        [SerializeField] Renderer m_RightHandRenderer;
-        [SerializeField] AppearanceManger m_AppearanceManger;
+        [SerializeField]
+        [Tooltip("List of hand mesh renderers to change the runtime shader properties on when allowing for passthrough to occur.")]
+        List<Renderer> m_HandRenderers;
 
-        Material[] m_LeftHandMaterials;
-        Material[] m_RightHandMaterials;
+        /// <summary>
+        /// List of hand mesh renderers to change the runtime shader properties on when allowing for passthrough to occur.
+        /// </summary>
+        public List<Renderer> handRenderers
+        {
+            get => m_HandRenderers;
+            set => m_HandRenderers = value;
+        }
+
+        [SerializeField]
+        [Tooltip("Shader reference to use for property lookup when changing the passthrough alpha properties at runtime.")]
+        Shader m_Shader;
+
+        /// <summary>
+        /// Shader reference to use for property lookup when changing the passthrough alpha properties at runtime.
+        /// </summary>
+        public Shader shader
+        {
+            get => m_Shader;
+            set => m_Shader = value;
+        }
+
+        [SerializeField]
+        [Tooltip("Reference to the Appearance Manager instance in the scene that controls the state of the passthrough volume.")]
+        AppearanceManger m_AppearanceManger;
+
+        /// <summary>
+        /// Reference to the Appearance Manager instance in the scene that controls the state of the passthrough volume.
+        /// </summary>
+        public AppearanceManger appearanceManger
+        {
+            get => m_AppearanceManger;
+            set => m_AppearanceManger = value;
+        }
+
+
+        List<Material> m_HandMaterials = new List<Material>();
 
         float m_CurrentPassthroughOpacity;
         float m_TargetPassthroughOpacity;
@@ -22,23 +55,24 @@ namespace UnityLabs.Slices.Passthrough
         float m_CurrentNonPassthroughOpacity;
         float m_TargetNonPassthroughOpacity;
 
-        bool m_Visible;
-        bool m_DisplayARModePassthrougHands;
         float m_PassthroughHandSpeedScalar = 8f;
 
         readonly int m_NonPassthroughOpacityPropertyID = Shader.PropertyToID("_ARPassthroughAlpha");
         readonly int m_PassthroughOpacityPropertyID = Shader.PropertyToID("_PassthroughAlpha");
-        readonly int m_PassthroughBoundaryCrossAlphaOpacityPropertyID = Shader.PropertyToID("_PassthroughBoundaryCrossAlpha");
         readonly int m_ModePropertyID = Shader.PropertyToID("_Mode");
+
+        bool m_Visible;
 
         public bool visible
         {
             set
             {
                 m_Visible = value;
-                m_TargetPassthroughOpacity = value ? 1f : 0f;
+                m_TargetPassthroughOpacity = m_Visible ? 1f : 0f;
             }
         }
+
+        bool m_DisplayARModePassthrougHands;
 
         public bool displayARModePassthrougHands
         {
@@ -51,14 +85,38 @@ namespace UnityLabs.Slices.Passthrough
 
         void Start()
         {
+            SetupMaterials();
+        }
+
+        void SetupMaterials()
+        {
+            if (m_HandMaterials == null)
+                m_HandMaterials = new List<Material>();
+
             // Instead of grabbing a single slot, we take all shared materials.
-            m_LeftHandMaterials = m_LeftHandRenderer.sharedMaterials;
-            m_RightHandMaterials = m_RightHandRenderer.sharedMaterials;
+            foreach (var handRenderer in m_HandRenderers)
+            {
+                if (m_Shader != null)
+                {
+                    var materials = handRenderer.sharedMaterials;
+                    for (int i = 0; i < materials.Length; ++i)
+                    {
+                        if (materials[i].shader == m_Shader)
+                        {
+                            m_HandMaterials.Add(materials[i]);
+                        }
+                    }
+                }
+                else
+                {
+                    m_HandMaterials.AddRange(handRenderer.sharedMaterials);
+                }
+            }
         }
 
         void Update()
         {
-            if (m_AppearanceManger == null)
+            if (m_AppearanceManger == null || m_HandMaterials == null || m_HandMaterials.Count == 0)
             {
                 return;
             }
@@ -84,20 +142,14 @@ namespace UnityLabs.Slices.Passthrough
                     break;
             }
 
-            // Apply effects to all left hand materials
-            for (int i = 0; i < m_LeftHandMaterials.Length; i++)
+            // Apply effects to all hand materials
+            // In the future, we might want to check the game objects to see if they have been disabled to avoid the cost
+            // of setting the properties on every instance that might be disabled, especially with 2 sets of hand meshes.
+            for (int i = 0; i < m_HandMaterials.Count; i++)
             {
-                m_LeftHandMaterials[i].SetFloat(m_PassthroughOpacityPropertyID, m_CurrentPassthroughOpacity);
-                m_LeftHandMaterials[i].SetFloat(m_NonPassthroughOpacityPropertyID, m_CurrentNonPassthroughOpacity);
-                m_LeftHandMaterials[i].SetInt(m_ModePropertyID, mode);
-            }
-
-            // Apply effects to all right hand materials
-            for (int i = 0; i < m_RightHandMaterials.Length; i++)
-            {
-                m_RightHandMaterials[i].SetFloat(m_PassthroughOpacityPropertyID, m_CurrentPassthroughOpacity);
-                m_RightHandMaterials[i].SetFloat(m_NonPassthroughOpacityPropertyID, m_CurrentNonPassthroughOpacity);
-                m_RightHandMaterials[i].SetInt(m_ModePropertyID, mode);
+                m_HandMaterials[i].SetFloat(m_PassthroughOpacityPropertyID, m_CurrentPassthroughOpacity);
+                m_HandMaterials[i].SetFloat(m_NonPassthroughOpacityPropertyID, m_CurrentNonPassthroughOpacity);
+                m_HandMaterials[i].SetInt(m_ModePropertyID, mode);
             }
         }
     }

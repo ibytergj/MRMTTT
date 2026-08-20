@@ -130,7 +130,7 @@ namespace XRMultiplayer
 
             if (IsOwner)
             {
-                m_XROrigin = FindFirstObjectByType<XROrigin>();
+                m_XROrigin = FindAnyObjectByType<XROrigin>();
                 if (m_XROrigin.TryGetComponent(out m_XRModalityManager))
                 {
                     SetupLocalHands();
@@ -151,30 +151,42 @@ namespace XRMultiplayer
 
         void SetupLocalHands()
         {
-            m_LeftControllerTransformReference = m_XRModalityManager.leftController.transform;
-            m_RightControllerTransformReference = m_XRModalityManager.rightController.transform;
+            if (m_XRModalityManager.leftController != null)
+                m_LeftControllerTransformReference = m_XRModalityManager.leftController.transform;
+            if (m_XRModalityManager.rightController != null)
+                m_RightControllerTransformReference = m_XRModalityManager.rightController.transform;
 
             if (m_XRModalityManager.leftHand == null)    //Rig doesn't have hands setup
             {
-                m_LeftHandTransformReference = m_XRModalityManager.leftController.transform;
-                m_RightHandTransformReference = m_XRModalityManager.rightController.transform;
+                m_LeftHandTransformReference = m_LeftControllerTransformReference;
+                m_RightHandTransformReference = m_RightControllerTransformReference;
                 SetTrackingType(XRInputModalityManager.InputMode.MotionController);
             }
             else    //Setup Hands and modality change listeners
             {
-                m_LeftHandTransformReference = m_XRModalityManager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>().rootTransform;
-                m_RightHandTransformReference = m_XRModalityManager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>().rootTransform;
+                var leftHandSkeleton = m_XRModalityManager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>();
+                var rightHandSkeleton = m_XRModalityManager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>();
 
-                SetTrackingType(XRInputModalityManager.currentInputMode.Value);
+                if (leftHandSkeleton != null)
+                    m_LeftHandTransformReference = leftHandSkeleton.rootTransform;
 
-                m_XRModalityManager.trackedHandModeStarted.AddListener(SwapToHands);
-                m_XRModalityManager.motionControllerModeStarted.AddListener(SwapToControllers);
+                if (rightHandSkeleton != null)
+                    m_RightHandTransformReference = rightHandSkeleton.rootTransform;
+
+                // Setup tracking listening if either hand is tracked (hopefully to slightly future proof synchronous multimodality)
+                if (rightHandSkeleton != null || leftHandSkeleton != null)
+                {
+                    SetTrackingType(XRInputModalityManager.currentInputMode.Value);
+
+                    m_XRModalityManager.trackedHandModeStarted.AddListener(SwapToHands);
+                    m_XRModalityManager.motionControllerModeStarted.AddListener(SwapToControllers);
+                }
             }
         }
 
         void SetupLocalFingerReferences()
         {
-            XRInputModalityManager modalityMangager = FindFirstObjectByType<XRInputModalityManager>();
+            XRInputModalityManager modalityMangager = FindAnyObjectByType<XRInputModalityManager>();
 
             // Early out if hands are not setup
             if (modalityMangager.leftHand == null)
@@ -194,7 +206,8 @@ namespace XRMultiplayer
 
             XRHandSkeletonDriver localLeftHandSkeleton = modalityMangager.leftHand.GetComponentInChildren<XRHandSkeletonDriver>();
             XRHandSkeletonDriver localRightHandSkeleton = modalityMangager.rightHand.GetComponentInChildren<XRHandSkeletonDriver>();
-
+            if (localLeftHandSkeleton == null || localRightHandSkeleton == null)
+                return;
 
             m_LocalHandFidelityOptions = new HandFidelityOption[2];
             for (int i = 0; i < m_LocalHandFidelityOptions.Length; i++)
@@ -361,12 +374,12 @@ namespace XRMultiplayer
 
                 if (m_UpdateHandsLocally)
                 {
-                    GetNetworkCurl();
+                    SyncNetworkCurl();
                 }
             }
             else
             {
-                GetNetworkCurl();
+                SyncNetworkCurl();
             }
         }
 
@@ -383,7 +396,8 @@ namespace XRMultiplayer
             }
         }
 
-        void GetNetworkCurl()
+        // Goes through the networked list and sets the local curl amount
+        void SyncNetworkCurl()
         {
             for (int i = 0; i < m_HandCurler[0].handFidelityOptions[0].fingerJoints.Length; i++)
             {

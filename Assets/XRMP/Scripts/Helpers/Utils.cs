@@ -13,9 +13,11 @@ namespace XRMultiplayer
         public const string k_LogPrefix = "<color=#33FF64>[XRMultiplayer]</color> ";
         public static LogLevel s_LogLevel = LogLevel.Developer;
 
-        public static void LogError(string message) => Log(message, 2);
-        public static void LogWarning(string message) => Log(message, 1);
-        public static void Log(string message, int logLevel = 0)
+        public static void LogError(string message) => Log(message, LogLevel.Error);
+        public static void LogWarning(string message) => Log(message, LogLevel.Normal);
+        public static void Log(string message, int logLevel = 0) => Log(message, (LogLevel)logLevel);
+
+        public static void Log(string message, LogLevel logLevel)
         {
             if (s_LogLevel == LogLevel.Nothing) return;
             StringBuilder sb = new(k_LogPrefix);
@@ -23,15 +25,15 @@ namespace XRMultiplayer
 
             switch (logLevel)
             {
-                case 0:
-                    if (s_LogLevel == 0)
+                case LogLevel.Developer:
+                    if (s_LogLevel == LogLevel.Developer)
                         Debug.Log(sb);
                     break;
-                case 1:
-                    if ((int)s_LogLevel < 2)
+                case LogLevel.Normal:
+                    if (s_LogLevel < LogLevel.Error)
                         Debug.LogWarning(sb);
                     break;
-                case 2:
+                case LogLevel.Error:
                     Debug.LogError(sb);
                     break;
             }

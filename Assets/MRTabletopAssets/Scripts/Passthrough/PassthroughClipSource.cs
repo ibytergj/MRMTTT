@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace UnityLabs.Slices.Passthrough
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     [ExecuteAlways]
     public class PassthroughClipSource : MonoBehaviour

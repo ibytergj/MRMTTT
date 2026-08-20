@@ -1,6 +1,5 @@
 using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings;
-using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Transformers;
 using Unity.XR.CoreUtils.Bindings.Variables;
@@ -9,7 +8,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Attachment;
 using UnityEngine.XR.Interaction.Toolkit.Samples.Hands;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public enum CalibrationState
     {

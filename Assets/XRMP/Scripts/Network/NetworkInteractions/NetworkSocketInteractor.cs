@@ -45,17 +45,21 @@ namespace XRMultiplayer
         {
             base.OnNetworkDespawn();
 
-            XRGrabInteractable grabInteractable = m_SocketInteractor.GetOldestInteractableSelected() as XRGrabInteractable;
+            if (m_SocketInteractor == null)
+                return;
+
+            var grabInteractable = m_SocketInteractor.GetOldestInteractableSelected() as XRGrabInteractable;
             m_SocketInteractor.enabled = false;
-            if (grabInteractable != null)
-            {
-                NetworkPhysicsInteractable networkInteractable = grabInteractable.GetComponent<NetworkPhysicsInteractable>();
-                if (networkInteractable != null)
-                {
-                    networkInteractable.ResetObject();
-                    networkInteractable.ResetObjectPhysics();
-                }
-            }
+
+            if (grabInteractable == null)
+                return;
+
+            var networkInteractable = grabInteractable.GetComponent<NetworkPhysicsInteractable>();
+            if (networkInteractable == null)
+                return;
+
+            networkInteractable.ResetObject();
+            networkInteractable.ResetObjectPhysics();
         }
 
         /// <summary>

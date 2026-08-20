@@ -1,9 +1,8 @@
 using Unity.XR.CoreUtils.Bindings;
-using UnityEngine;
 using UnityEngine.XR.Content.Utils;
 using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
 
-namespace UnityLabs.Slices.Passthrough
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class PassthroughVolume : MonoBehaviour
     {

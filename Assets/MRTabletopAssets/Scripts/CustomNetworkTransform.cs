@@ -378,7 +378,7 @@ namespace Unity.Netcode.Components
             }
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [ServerRpc(InvokePermission = RpcInvokePermission.Everyone)]
         private void CommitTransformServerRpc(NetworkTransformState networkState, ServerRpcParams serverParams = default)
         {
             if (serverParams.Receive.SenderClientId == OwnerClientId) // RPC call when not authorized to write could happen during the RTT interval during which a server's ownership change hasn't reached the client yet

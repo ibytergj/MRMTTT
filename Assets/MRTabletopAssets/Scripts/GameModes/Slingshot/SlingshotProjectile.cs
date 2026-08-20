@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using UnityEngine;
-using XRMultiplayer;
 
-namespace MRTTT
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Represents a projectile for the slingshot mini-game.

@@ -1,8 +1,7 @@
 using Unity.XR.CoreUtils.Bindings;
-using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
 
-namespace UnityLabs.Slices.Environment
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class BackgroundTransition : MonoBehaviour
     {

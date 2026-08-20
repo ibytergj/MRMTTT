@@ -1,6 +1,5 @@
-using UnityEngine;
-
-namespace XRMultiplayer
+using XRMultiplayer;
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// A very simple script that will enable or disable objects based on the Network Connection State.

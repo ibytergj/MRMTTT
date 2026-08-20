@@ -34,7 +34,7 @@ namespace XRMultiplayer
         /// Called from the local user to the Server when the local user has clicked the button.
         /// </summary>
         /// <param name="clientId">Local user Id.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ClickButtonServerRpc(ulong clientId)
         {
             ClickButtonClientRpc(clientId);

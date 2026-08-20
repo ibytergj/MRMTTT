@@ -1,11 +1,11 @@
 using System.Collections;
 using Unity.Services.Lobbies.Models;
-using UnityEngine;
+using XRMultiplayer;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Services.Vivox;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class LobbyUI : MonoBehaviour
     {
@@ -36,7 +36,7 @@ namespace XRMultiplayer
 
         private void Awake()
         {
-            m_VoiceChatManager = FindFirstObjectByType<VoiceChatManager>();
+            m_VoiceChatManager = FindAnyObjectByType<VoiceChatManager>();
             LobbyManager.status.Subscribe(ConnectedUpdated);
         }
 

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine;
+using XRMultiplayer;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class PlayerListUI : MonoBehaviour
     {

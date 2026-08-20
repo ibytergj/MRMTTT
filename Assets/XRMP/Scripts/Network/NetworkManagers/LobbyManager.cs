@@ -67,7 +67,7 @@ namespace XRMultiplayer
         /// </summary>
         private void Awake()
         {
-            m_Transport = FindFirstObjectByType<UnityTransport>();
+            m_Transport = FindAnyObjectByType<UnityTransport>();
 
             if (!Application.isEditor)
             {

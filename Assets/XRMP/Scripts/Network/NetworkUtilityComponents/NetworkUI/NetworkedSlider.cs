@@ -77,7 +77,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="newValue">Value of the slider.</param>
         /// <param name="clientId">Local user Id.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void SliderChangedServerRpc(float newValue, ulong clientId)
         {
             m_NetworkSliderValue.Value = newValue;

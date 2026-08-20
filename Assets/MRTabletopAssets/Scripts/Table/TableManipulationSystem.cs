@@ -1,139 +1,128 @@
-using System;
 using Unity.XR.CoreUtils;
-using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
-using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
-using UnityEngine.XR.Interaction.Toolkit.Transformers;
 
-[RequireComponent(typeof(XRGrabInteractable))]
-public class TableManipulator : MonoBehaviour
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
-    [SerializeField]
-    protected GameObject m_TableVisualsObject;
-
-    [SerializeField]
-    protected TableTop m_TableTop;
-    protected XROrigin m_XROrigin;
-    protected TeleportationProvider m_TeleportationProvider;
-    protected Transform m_Head;
-
-    protected XRGrabInteractable m_GrabInteractable;
-
-    protected TableSeatSystem m_TableSeatSystem;
-
-    Rigidbody m_Rigidbody;
-
-    Vector3 m_InitialTablePosition;
-    Quaternion m_InitialTableRotation;
-    Vector3 m_InitialHeadPosition;
-    float m_InitialSeatOffset;
-    Vector3 m_InitialTableLocalPos;
-
-    void Awake()
+    [RequireComponent(typeof(XRGrabInteractable))]
+    public class TableManipulator : MonoBehaviour
     {
-        m_InitialTableLocalPos = transform.localPosition;
-    }
+        [SerializeField]
+        protected GameObject m_TableVisualsObject;
 
-    protected virtual void Start()
-    {
-        m_GrabInteractable = GetComponent<XRGrabInteractable>();
-        m_TableSeatSystem = GetComponentInParent<TableSeatSystem>();
-        m_Rigidbody = GetComponent<Rigidbody>();
+        [SerializeField]
+        protected TableTop m_TableTop;
+        protected XROrigin m_XROrigin;
+        protected TeleportationProvider m_TeleportationProvider;
+        protected Transform m_Head;
 
-        m_XROrigin = FindFirstObjectByType<XROrigin>();
-        m_Head = m_XROrigin.Camera.transform;
+        protected XRGrabInteractable m_GrabInteractable;
 
-        m_TeleportationProvider = m_XROrigin.GetComponentInChildren<TeleportationProvider>();
-        m_TableVisualsObject.SetActive(false);
+        protected TableSeatSystem m_TableSeatSystem;
 
-        m_GrabInteractable.firstSelectEntered.AddListener(StartSelection);
-        m_GrabInteractable.lastSelectExited.AddListener(EndSelection);
-    }
+        Rigidbody m_Rigidbody;
 
-    void OnDestroy()
-    {
-        if (m_GrabInteractable == null)
-            return;
-        m_GrabInteractable.firstSelectEntered.RemoveListener(StartSelection);
-        m_GrabInteractable.lastSelectExited.RemoveListener(EndSelection);
-    }
+        Vector3 m_InitialTableLocalPos;
 
-    Matrix4x4 m_InitialTableTransform;
-    Matrix4x4 m_InitialPlayerTransform;
+        void Awake()
+        {
+            m_InitialTableLocalPos = transform.localPosition;
+        }
 
-    public void StartSelection(SelectEnterEventArgs args)
-    {
-        m_InitialTableTransform = transform.localToWorldMatrix;
-        m_InitialPlayerTransform = m_XROrigin.transform.localToWorldMatrix;
-        m_TableVisualsObject.SetActive(true);
-    }
+        protected virtual void Start()
+        {
+            m_GrabInteractable = GetComponent<XRGrabInteractable>();
+            m_TableSeatSystem = GetComponentInParent<TableSeatSystem>();
+            m_Rigidbody = GetComponent<Rigidbody>();
 
-    public void EndSelection(SelectExitEventArgs args)
-    {
-        if (m_GrabInteractable.isSelected)
-            return;
+            m_XROrigin = FindAnyObjectByType<XROrigin>();
+            m_Head = m_XROrigin.Camera.transform;
 
-        m_TableVisualsObject.SetActive(false);
+            m_TeleportationProvider = m_XROrigin.GetComponentInChildren<TeleportationProvider>();
+            m_TableVisualsObject.SetActive(false);
 
-        _ = MovePlayer();
-    }
+            m_GrabInteractable.firstSelectEntered.AddListener(StartSelection);
+            m_GrabInteractable.lastSelectExited.AddListener(EndSelection);
+        }
 
-    public async Awaitable MovePlayer()
-    {
-        // Wait for the next fixed update for the table to be updated
-        await Awaitable.FixedUpdateAsync();
+        void OnDestroy()
+        {
+            if (m_GrabInteractable == null)
+                return;
+            m_GrabInteractable.firstSelectEntered.RemoveListener(StartSelection);
+            m_GrabInteractable.lastSelectExited.RemoveListener(EndSelection);
+        }
 
-        // Compute the final table transform
-        Matrix4x4 finalTableTransform = transform.localToWorldMatrix;
+        Matrix4x4 m_InitialTableTransform;
+        Matrix4x4 m_InitialPlayerTransform;
 
-        // Compute the table's transform delta
-        Matrix4x4 tableTransformDelta = finalTableTransform * m_InitialTableTransform.inverse;
+        public void StartSelection(SelectEnterEventArgs args)
+        {
+            m_InitialTableTransform = transform.localToWorldMatrix;
+            m_InitialPlayerTransform = m_XROrigin.transform.localToWorldMatrix;
+            m_TableVisualsObject.SetActive(true);
+        }
 
-        // Compute the inverse of the table's transform delta
-        Matrix4x4 inverseTableTransformDelta = tableTransformDelta.inverse;
+        public void EndSelection(SelectExitEventArgs args)
+        {
+            if (m_GrabInteractable.isSelected)
+                return;
 
-        // Apply the inverse of the table's transform delta to the player's transform
-        Matrix4x4 newPlayerTransform = inverseTableTransformDelta * m_InitialPlayerTransform;
+            m_TableVisualsObject.SetActive(false);
 
-        // Update seat offset if needed
-        UpdateSeatOffset();
+            _ = MovePlayer();
+        }
 
-        // Reset the table's position and rotation
-        transform.localPosition = m_InitialTableLocalPos;
-        transform.localRotation = Quaternion.identity;
+        public async Awaitable MovePlayer()
+        {
+            // Wait for the next fixed update for the table to be updated
+            await Awaitable.FixedUpdateAsync();
 
-        // Move rigitbody to match the transform
-        m_Rigidbody.MovePosition(transform.position);
-        m_Rigidbody.MoveRotation(transform.rotation);
+            // Compute the final table transform
+            Matrix4x4 finalTableTransform = transform.localToWorldMatrix;
 
-        // Update the player's position and rotation
-        m_XROrigin.transform.position = newPlayerTransform.GetColumn(3);
-        m_XROrigin.transform.rotation = Quaternion.LookRotation(
-            newPlayerTransform.GetColumn(2),
-            newPlayerTransform.GetColumn(1)
-        );
-    }
+            // Compute the table's transform delta
+            Matrix4x4 tableTransformDelta = finalTableTransform * m_InitialTableTransform.inverse;
 
-    void UpdateSeatOffset()
-    {
-        // Get the current seat's forward direction
-        Vector3 seatForward = m_TableTop.GetSeat(TableTop.k_CurrentSeat).forward;
+            // Compute the inverse of the table's transform delta
+            Matrix4x4 inverseTableTransformDelta = tableTransformDelta.inverse;
 
-        // Calculate the vector from the table center to the head
-        Vector3 tableToHead = m_Head.position - transform.position;
+            // Apply the inverse of the table's transform delta to the player's transform
+            Matrix4x4 newPlayerTransform = inverseTableTransformDelta * m_InitialPlayerTransform;
 
-        // Project this vector onto the plane defined by the table's up vector
-        //Vector3 projectedTableToHead = Vector3.ProjectOnPlane(tableToHead, Vector3.up);
+            // Update seat offset if needed
+            UpdateSeatOffset();
 
-        // Calculate the signed distance along the seat's forward direction
-        //float signedDistance = Vector3.Dot(projectedTableToHead, seatForward);
+            // Reset the table's position and rotation
+            transform.localPosition = m_InitialTableLocalPos;
+            transform.localRotation = Quaternion.identity;
 
-        // Calculate the new seat offset
-        float newSeatOffset = Vector3.Project(-tableToHead, seatForward).magnitude - m_TableTop.seatDistance;
+            // Move rigitbody to match the transform
+            m_Rigidbody.MovePosition(transform.position);
+            m_Rigidbody.MoveRotation(transform.rotation);
 
-        // Update the table top's seat offset
-        m_TableTop.seatOffset = newSeatOffset;
+            // Update the player's position and rotation
+            m_XROrigin.transform.position = newPlayerTransform.GetColumn(3);
+            m_XROrigin.transform.rotation = Quaternion.LookRotation(
+                newPlayerTransform.GetColumn(2),
+                newPlayerTransform.GetColumn(1)
+            );
+        }
+
+        void UpdateSeatOffset()
+        {
+            // Get the current seat's forward direction
+            Vector3 seatForward = m_TableTop.GetSeat(TableTop.k_CurrentSeat).forward;
+
+            // Calculate the vector from the table center to the head
+            Vector3 tableToHead = m_Head.position - transform.position;
+
+            // Calculate the new seat offset
+            float newSeatOffset = Vector3.Project(-tableToHead, seatForward).magnitude - m_TableTop.seatDistance;
+
+            // Update the table top's seat offset
+            m_TableTop.seatOffset = newSeatOffset;
+        }
     }
 }

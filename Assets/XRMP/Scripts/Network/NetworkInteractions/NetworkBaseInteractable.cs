@@ -223,7 +223,7 @@ namespace XRMultiplayer
             m_BaseInteractable.selectFilters.Add(this);
             m_BaseInteractable.hoverFilters.Add(this);
 
-            m_InteractionManager = FindFirstObjectByType<XRInteractionManager>();
+            m_InteractionManager = FindAnyObjectByType<XRInteractionManager>();
 
 #pragma warning disable CS0618 // Type or member is obsolete
             m_AffordanceStateProvider = GetComponentInChildren<BaseAffordanceStateProvider>();
@@ -354,7 +354,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="entered">True if hover entered, False if hover exited.</param>
         /// <param name="clientId">ClientId who sent the RPC.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public virtual void OnHoverServerRpc(bool entered, ulong clientId)
         {
             OnHoverClientRpc(entered, clientId);
@@ -453,7 +453,7 @@ namespace XRMultiplayer
             }
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ResetObjectToHostServerRpc()
         {
             if (NetworkObject.OwnerClientId != NetworkManager.Singleton.LocalClientId)
@@ -465,7 +465,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="selected">True if select entered, False if select exited.</param>
         /// <param name="clientId">ClientId who sent the RPC.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public virtual void OnSelectServerRpc(bool selected, ulong clientId)
         {
             OnSelectClientRpc(selected, clientId);
@@ -535,7 +535,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="activate">True if activated, False if Deactivated.</param>
         /// <param name="clientId">ClientId who sent the RPC.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public virtual void OnActivateServerRpc(bool activate, ulong clientId)
         {
             OnActivateClientRpc(activate, clientId);

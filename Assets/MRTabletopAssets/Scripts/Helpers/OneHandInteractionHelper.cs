@@ -1,14 +1,10 @@
-using System;
 using Unity.Mathematics;
 using Unity.XR.CoreUtils;
-using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using UnityEngine.XR.Interaction.Toolkit.Utilities;
 using Unity.Burst;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     [BurstCompile]
     public class OneHandedTransformerHelper
@@ -18,7 +14,6 @@ namespace XRMultiplayer
         Pose m_OriginalInteractorPose;
         Vector3 m_InteractorLocalGrabPoint;
         Vector3 m_ObjectLocalGrabPoint;
-        IXRInteractor m_OriginalInteractor;
 
         public void Setup(XRGrabInteractable grabInteractable, IXRInteractor interactor)
         {
@@ -27,7 +22,6 @@ namespace XRMultiplayer
 
             m_OriginalObjectPose = grabInteractableTransform.GetWorldPose();
             m_OriginalInteractorPose = interactor.GetAttachTransform(grabInteractable).GetWorldPose();
-            m_OriginalInteractor = interactor;
 
             Vector3 offsetTargetPosition = Vector3.zero;
             Quaternion offsetTargetRotation = Quaternion.identity;

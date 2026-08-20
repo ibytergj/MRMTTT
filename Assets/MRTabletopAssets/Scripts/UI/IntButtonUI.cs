@@ -1,44 +1,46 @@
 using TMPro;
-using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class IntButtonUI : MonoBehaviour
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
-    [SerializeField] UnityEvent<int> m_ValueUpdated;
-    [SerializeField] Vector2Int m_MinMaxValue;
-    [SerializeField] Button m_IncrementButton;
-    [SerializeField] Button m_DecrementButton;
-
-    [SerializeField] int m_UpdateValue = 1;
-    [SerializeField] int m_CurrentValue;
-    [SerializeField] TMP_Text m_CurrentValueText;
-
-    void Start()
+    public class IntButtonUI : MonoBehaviour
     {
-        m_IncrementButton.onClick.AddListener(() => UpdateValue(true));
-        m_DecrementButton.onClick.AddListener(() => UpdateValue(false));
+        [SerializeField] UnityEvent<int> m_ValueUpdated;
+        [SerializeField] Vector2Int m_MinMaxValue;
+        [SerializeField] Button m_IncrementButton;
+        [SerializeField] Button m_DecrementButton;
 
-        m_CurrentValueText.text = m_CurrentValue.ToString();
-        m_ValueUpdated.Invoke(m_CurrentValue);
-    }
+        [SerializeField] int m_UpdateValue = 1;
+        [SerializeField] int m_CurrentValue;
+        [SerializeField] TMP_Text m_CurrentValueText;
 
-    void OnDestroy()
-    {
-        m_IncrementButton.onClick.RemoveAllListeners();
-        m_DecrementButton.onClick.RemoveAllListeners();
-    }
+        void Start()
+        {
+            m_IncrementButton.onClick.AddListener(() => UpdateValue(true));
+            m_DecrementButton.onClick.AddListener(() => UpdateValue(false));
 
-    public void UpdateValue(bool increment)
-    {
-        m_CurrentValue = Mathf.Clamp(m_CurrentValue + (increment ? m_UpdateValue : -m_UpdateValue), m_MinMaxValue.x, m_MinMaxValue.y);
-        m_CurrentValueText.text = m_CurrentValue.ToString();
-        m_ValueUpdated.Invoke(m_CurrentValue);
-    }
+            m_CurrentValueText.text = m_CurrentValue.ToString();
+            m_ValueUpdated.Invoke(m_CurrentValue);
+        }
 
-    void OnValidate()
-    {
-        m_CurrentValue = Mathf.Clamp(m_CurrentValue, m_MinMaxValue.x, m_MinMaxValue.y);
-        m_CurrentValueText.text = m_CurrentValue.ToString();
+        void OnDestroy()
+        {
+            m_IncrementButton.onClick.RemoveAllListeners();
+            m_DecrementButton.onClick.RemoveAllListeners();
+        }
+
+        public void UpdateValue(bool increment)
+        {
+            m_CurrentValue = Mathf.Clamp(m_CurrentValue + (increment ? m_UpdateValue : -m_UpdateValue), m_MinMaxValue.x, m_MinMaxValue.y);
+            m_CurrentValueText.text = m_CurrentValue.ToString();
+            m_ValueUpdated.Invoke(m_CurrentValue);
+        }
+
+        void OnValidate()
+        {
+            m_CurrentValue = Mathf.Clamp(m_CurrentValue, m_MinMaxValue.x, m_MinMaxValue.y);
+            m_CurrentValueText.text = m_CurrentValue.ToString();
+        }
     }
 }

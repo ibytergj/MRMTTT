@@ -28758,7 +28758,7 @@ PrefabInstance:
     - target: {fileID: 2179057469866936249, guid: ff51b3a439d574c9fa4552bee28f6c65,
         type: 3}
       propertyPath: m_text
-      value: Main Volume
+      value: SFX Volume
       objectReference: {fileID: 0}
     - target: {fileID: 2179057469866936249, guid: ff51b3a439d574c9fa4552bee28f6c65,
         type: 3}
@@ -30522,7 +30522,7 @@ PrefabInstance:
     - target: {fileID: 2179057469866936249, guid: ff51b3a439d574c9fa4552bee28f6c65,
         type: 3}
       propertyPath: m_text
-      value: Main Volume
+      value: SFX Volume
       objectReference: {fileID: 0}
     - target: {fileID: 2179057469866936249, guid: ff51b3a439d574c9fa4552bee28f6c65,
         type: 3}

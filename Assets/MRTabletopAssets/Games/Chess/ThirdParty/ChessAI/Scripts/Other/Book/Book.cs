@@ -1,3 +1,5 @@
+using System;
+
 namespace Chess
 {
     using System.Collections.Generic;
@@ -7,7 +9,7 @@ namespace Chess
     [System.Serializable]
     public class Book
     {
-
+        [NonSerialized]
         public Dictionary<ulong, BookPosition> bookPositions;
 
         public Book()
@@ -122,6 +124,7 @@ namespace Chess
     [System.Serializable]
     public class BookPosition
     {
+        [NonSerialized]
         public Dictionary<ushort, int> numTimesMovePlayed;
 
         public BookPosition()

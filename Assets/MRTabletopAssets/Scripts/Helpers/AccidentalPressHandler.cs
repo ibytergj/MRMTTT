@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using Unity.XR.CoreUtils;
-using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Handles preventing unintended interactions by disabling interactables when an interactor overlaps a specified bounding region.

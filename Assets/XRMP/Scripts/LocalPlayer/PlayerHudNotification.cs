@@ -71,6 +71,13 @@ namespace XRMultiplayer
             Instance = this;
         }
 
+        ///<inheritdoc/>
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
+
         /// <inheritdoc/>
         private void Start()
         {

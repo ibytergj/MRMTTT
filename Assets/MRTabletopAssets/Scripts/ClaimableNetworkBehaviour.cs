@@ -145,7 +145,7 @@ namespace UnityLabs.SmartUX.Network
             m_ReleaseTimer = 0f;
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ChangeOwnershipServerRpc(ulong clientId)
         {
             NetworkObject.ChangeOwnership(clientId);
@@ -154,7 +154,7 @@ namespace UnityLabs.SmartUX.Network
 
         // Techically RequireOwnership should be true
         // But if you try to claim/unclaim quickly it will give an error
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void RemoveOwnershipServerRpc(ulong clientId)
         {
             // Ensure client trying to realse is one that owns! Possible another

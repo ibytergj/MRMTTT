@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine;
 using Unity.Netcode;
 using System;
 using UnityEngine.Events;
 using XRMultiplayer;
 
-namespace MRTTT
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Represents a networked object dispenser that can spawn and despawn interactable objects.

@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEngine.Audio;
 using TMPro;
@@ -10,8 +9,9 @@ using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 using UnityEngine.Android;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
+using XRMultiplayer;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     [DefaultExecutionOrder(100)]
     public class PlayerOptions : MonoBehaviour
@@ -380,12 +380,6 @@ namespace XRMultiplayer
         public void ToggleTunnelingVignette(bool toggle)
         {
             m_TunnelingVignetteController.gameObject.SetActive(toggle);
-        }
-
-        public void ToggleFlight(bool toggle)
-        {
-            m_MoveProvider.useGravity = !toggle;
-            m_MoveProvider.enableFly = toggle;
         }
 
         public void ConfirmAppearance()

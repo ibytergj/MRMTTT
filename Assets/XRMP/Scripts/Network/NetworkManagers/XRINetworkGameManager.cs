@@ -367,7 +367,11 @@ namespace XRMultiplayer
         /// <returns></returns>
         XRINetworkPlayer FindPlayerByReference(ulong id)
         {
+#if UNITY_6000_5_OR_NEWER
+            XRINetworkPlayer[] allPlayers = FindObjectsByType<XRINetworkPlayer>();
+#else
             XRINetworkPlayer[] allPlayers = FindObjectsByType<XRINetworkPlayer>(FindObjectsSortMode.None);
+#endif
 
             //Loops through existing players and returns true if player with id is found.
             foreach (XRINetworkPlayer p in allPlayers)

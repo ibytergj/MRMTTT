@@ -1,8 +1,7 @@
 using System.Collections;
-using UnityEngine;
 using UnityEngine.Events;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class DelayedUnityEvent : MonoBehaviour
     {

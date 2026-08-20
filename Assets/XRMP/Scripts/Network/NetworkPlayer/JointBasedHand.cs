@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Hands;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+
 
 
 #if UNITY_EDITOR
@@ -41,8 +43,17 @@ namespace XRMultiplayer
         /// <summary>
         /// Specify where the root of the hand is.
         /// </summary>
-        [SerializeField, Tooltip("Specify where the root of the hand is.")]
-        protected Transform m_HandRoot;
+        [SerializeField, Header("Specify where the root of the hand is.")]
+        protected Transform m_HandRootQuest;
+
+        [SerializeField]
+        protected Transform m_HandRootAXR;
+
+        [SerializeField]
+        protected GameObject m_HandObjectRootQuest, m_HandObjectRootAXR;
+
+        [SerializeField, Tooltip("Controls how fast the fingers curl.")]
+        protected float m_RotationSpeed = 12.0f;
 
         /// <summary>
         /// Specify the names of the fingers.
@@ -69,12 +80,21 @@ namespace XRMultiplayer
         [SerializeField, Tooltip("Sets the Min/Max euler rotation of the fingers.")]
         protected Vector2 m_MinMaxEulerX = new Vector2(0, 100);
 
+        protected int m_CurrentPlatformIndex;
 
+        /// Finger Index to Joint ID mapping.
         //3, 4, 5           -- Thumb
         //7, 8, 9, 10       -- Index
         //12, 13, 14, 15    -- Middle
         //17, 18, 19, 20    -- Ring
         //22, 23, 24, 25    -- Little
+
+        /// <inheritdoc/>
+        private void Start()
+        {
+            m_CurrentPlatformIndex = GetComponentInParent<XRINetworkPlayer>().platformType.Value;
+            CheckForUpdate();
+        }
 
         /// <inheritdoc/>
         private void Update()
@@ -89,6 +109,7 @@ namespace XRMultiplayer
                     Vector3 rot = Vector3.zero;
                     rot.x = Mathf.Lerp(m_MinMaxEulerX.x, m_MinMaxEulerX.y, joint.curlAmount);
                     finger.jointTransform.localRotation = Quaternion.Euler(rot);
+                    finger.jointTransform.localRotation = Quaternion.Slerp(finger.jointTransform.localRotation, Quaternion.Euler(rot), m_RotationSpeed * Time.deltaTime);
                 }
             }
         }
@@ -96,7 +117,7 @@ namespace XRMultiplayer
         /// <summary>
         /// Controls the Curl level of fingers.
         /// </summary>
-        /// <remarks>Called from <see cref="XRHandPoseReplicator.GetNetworkCurl()"/>.</remarks>
+        /// <remarks>Called from <see cref="XRHandPoseReplicator.SyncNetworkCurl()"/>.</remarks>
         /// <param name="fingerID">ID of the specific finger.</param>
         /// <param name="curlAmount">Amount to curl the finger.</param>
         public void SetCurl(int fingerID, float curlAmount)
@@ -104,7 +125,20 @@ namespace XRMultiplayer
             handFidelityOptions[m_FidelityLevel].fingerJoints[fingerID].curlAmount = curlAmount;
         }
 
-#if UNITY_EDITOR
+        public void SetupAXRHand()
+        {
+            m_CurrentPlatformIndex = (int)XRPlatformType.OpenXRAndroidXR; // Assuming the hand root for AXR is the same as this object
+            ClearHandReferences();
+            SetupHandReferences();
+        }
+
+        public void SetupQuestHand()
+        {
+            m_CurrentPlatformIndex = (int)XRPlatformType.OpenXRMeta; // Assuming the hand root for Quest is the same as this object
+            ClearHandReferences();
+            SetupHandReferences();
+        }
+
         /// <summary>
         /// Clears the hand references.
         /// </summary>
@@ -133,7 +167,7 @@ namespace XRMultiplayer
                         handFidelityOptions[i].fingerJoints[j].jointTransformReferences = new List<JointToTransformReference>();
 
                         int jointDepth = i == 0 ? 4 : 3;
-                        if(j == 0) jointDepth -= 1;  // Thumb has 1 less joint than the other fingers
+                        if (j == 0) jointDepth -= 1;  // Thumb has 1 less joint than the other fingers
 
                         int startDepth = i == 0 ? 0 : 1;
 
@@ -141,7 +175,7 @@ namespace XRMultiplayer
                     }
 
                     //Get extra fingers as mittens
-                    if(i == 2)
+                    if (i == 2)
                     {
                         handFidelityOptions[i].fingerJoints[2].jointTransformReferences.AddRange(GetFingerJoints(m_FingerNames[3], 1, 3, m_FingerStartJointIds[3]));
                         handFidelityOptions[i].fingerJoints[2].jointTransformReferences.AddRange(GetFingerJoints(m_FingerNames[4], 1, 3, m_FingerStartJointIds[4]));
@@ -154,6 +188,21 @@ namespace XRMultiplayer
             }
         }
 
+        void CheckForUpdate()
+        {
+            if (m_CurrentPlatformIndex < 2) // Quest or AXR
+            {
+                ClearHandReferences();
+                SetupHandReferences();
+            }
+            else    // Other platform / Unknown platform, set to Quest by default
+            {
+                m_CurrentPlatformIndex = 0;
+                ClearHandReferences();
+                SetupHandReferences();
+            }
+        }
+
         List<JointToTransformReference> GetFingerJoints(string fingerName, int startDepth, int jointDepth, XRHandJointID fingerStartJointId)
         {
             try
@@ -161,14 +210,19 @@ namespace XRMultiplayer
                 List<JointToTransformReference> fingerJoints = new();
                 JointToTransformReference currentJoint = new();
 
-                foreach (Transform child in m_HandRoot)
+                var handRoot = m_CurrentPlatformIndex == (int)XRPlatformType.OpenXRMeta ? m_HandRootQuest : m_HandRootAXR;
+
+                m_HandObjectRootQuest.SetActive(m_CurrentPlatformIndex == (int)XRPlatformType.OpenXRMeta);
+                m_HandObjectRootAXR.SetActive(m_CurrentPlatformIndex == (int)XRPlatformType.OpenXRAndroidXR);
+
+                foreach (Transform child in handRoot)
                 {
                     if (child.name.Contains(fingerName))
                     {
                         Transform currentChild = child;
 
                         //Navigate to the starting joint based on the startDepth
-                        for(int i = 0; i < startDepth; i++)
+                        for (int i = 0; i < startDepth; i++)
                         {
                             currentChild = currentChild.GetChild(0);
                         }
@@ -193,8 +247,6 @@ namespace XRMultiplayer
                 return null;
             }
         }
-
-#endif
     }
 
     [Serializable]
@@ -239,6 +291,17 @@ namespace XRMultiplayer
             if (GUILayout.Button("Clear Hand References"))
             {
                 myScript.ClearHandReferences();
+            }
+
+            GUILayout.Space(10);
+            GUILayout.Label("Setup Hand for Platform:", EditorStyles.boldLabel);
+            if (GUILayout.Button("Setup Quest Hand"))
+            {
+                myScript.SetupQuestHand();
+            }
+            if (GUILayout.Button("Setup AXR Hand"))
+            {
+                myScript.SetupAXRHand();
             }
         }
     }

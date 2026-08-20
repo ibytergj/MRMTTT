@@ -1,9 +1,9 @@
 using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings.Variables;
-using UnityEngine;
 using UnityEngine.Android;
+using XRMultiplayer;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Represents the offline player avatar.
@@ -85,7 +85,7 @@ namespace XRMultiplayer
         /// <inheritdoc/>
         void Start()
         {
-            XROrigin rig = FindFirstObjectByType<XROrigin>();
+            XROrigin rig = FindAnyObjectByType<XROrigin>();
             m_HeadOrigin = rig.Camera.transform;
 
         }
@@ -153,8 +153,20 @@ namespace XRMultiplayer
         /// </summary>
         void InitMic()
         {
+            if (Microphone.devices.Length == 0)
+            {
+                Debug.LogWarning("Attempting to Initialize Microphone but no microphone device found.", this);
+                return;
+            }
+
+            m_Device = Microphone.devices[0];
+            if (m_Device == null)
+            {
+                Debug.LogWarning("Default microphone is null. Check system settings.", this);
+                return;
+            }
+
             m_MicInitialized = true;
-            m_Device ??= Microphone.devices[0];
             m_ClipRecord = Microphone.Start(m_Device, true, 999, 44100);
         }
 

@@ -1,213 +1,215 @@
 using System;
 using Unity.Netcode;
-using UnityEngine;
 using XRMultiplayer;
 
-public class NetworkTableTopManager : NetworkBehaviour
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
-    public NetworkList<NetworkedSeat> networkedSeats;
-
-    [SerializeField]
-    TableSeatSystem m_SeatSystem;
-
-    [SerializeField]
-    TableTop m_TableTop;
-
-    [SerializeField]
-    TableTopSeatButton[] m_SeatButtons;
-
-    void Awake()
+    public class NetworkTableTopManager : NetworkBehaviour
     {
-        networkedSeats = new NetworkList<NetworkedSeat>();
-    }
+        public NetworkList<NetworkedSeat> networkedSeats;
 
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
+        [SerializeField]
+        TableSeatSystem m_SeatSystem;
 
-        if (IsServer)
+        [SerializeField]
+        TableTop m_TableTop;
+
+        [SerializeField]
+        TableTopSeatButton[] m_SeatButtons;
+
+        void Awake()
         {
-            networkedSeats.Clear();
-            for (int i = 0; i < m_SeatButtons.Length; i++)
+            networkedSeats = new NetworkList<NetworkedSeat>();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (IsServer)
             {
-                networkedSeats.Add(new NetworkedSeat { isOccupied = false, playerID = 0 });
-            }
-        }
-
-        UpdateNetworkedSeatsVisuals();
-        networkedSeats.OnListChanged += OnOccupiedSeatsChanged;
-        RequestAnySeatFromHost();
-
-        if (IsServer)
-        {
-            XRINetworkGameManager.Instance.playerStateChanged += OnPlayerStateChanged;
-        }
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        base.OnNetworkDespawn();
-        foreach (var seatButton in m_SeatButtons)
-        {
-            seatButton.RemovePlayerFromSeat();
-        }
-        networkedSeats.OnListChanged -= OnOccupiedSeatsChanged;
-        XRINetworkGameManager.Instance.playerStateChanged -= OnPlayerStateChanged;
-        m_SeatSystem.TeleportToSeat(0);
-        TableTop.k_CurrentSeat = -2;
-    }
-
-    private void OnOccupiedSeatsChanged(NetworkListEvent<NetworkedSeat> changeEvent)
-    {
-        UpdateNetworkedSeatsVisuals();
-    }
-
-    void OnPlayerStateChanged(ulong playerID, bool connected)
-    {
-        if (!connected)
-        {
-            for (int i = 0; i < networkedSeats.Count; i++)
-            {
-                if (networkedSeats[i].playerID == playerID)
+                networkedSeats.Clear();
+                for (int i = 0; i < m_SeatButtons.Length; i++)
                 {
-                    ServerRemoveSeat(i);
+                    networkedSeats.Add(new NetworkedSeat { isOccupied = false, playerID = 0 });
                 }
             }
 
             UpdateNetworkedSeatsVisuals();
-        }
-    }
+            networkedSeats.OnListChanged += OnOccupiedSeatsChanged;
+            RequestAnySeatFromHost();
 
-    void UpdateNetworkedSeatsVisuals()
-    {
-        for (int i = 0; i < networkedSeats.Count; i++)
-        {
-            if (!networkedSeats[i].isOccupied)
+            if (IsServer)
             {
-                m_SeatButtons[i].SetOccupied(false);
+                XRINetworkGameManager.Instance.playerStateChanged += OnPlayerStateChanged;
             }
-            else
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            base.OnNetworkDespawn();
+            foreach (var seatButton in m_SeatButtons)
             {
-                if (XRINetworkGameManager.Instance.TryGetPlayerByID(networkedSeats[i].playerID, out var player))
+                seatButton.RemovePlayerFromSeat();
+            }
+            networkedSeats.OnListChanged -= OnOccupiedSeatsChanged;
+            XRINetworkGameManager.Instance.playerStateChanged -= OnPlayerStateChanged;
+            m_SeatSystem.TeleportToSeat(0);
+            TableTop.k_CurrentSeat = -2;
+        }
+
+        private void OnOccupiedSeatsChanged(NetworkListEvent<NetworkedSeat> changeEvent)
+        {
+            UpdateNetworkedSeatsVisuals();
+        }
+
+        void OnPlayerStateChanged(ulong playerID, bool connected)
+        {
+            if (!connected)
+            {
+                for (int i = 0; i < networkedSeats.Count; i++)
                 {
-                    m_SeatButtons[i].AssignPlayerToSeat(player);
+                    if (networkedSeats[i].playerID == playerID)
+                    {
+                        ServerRemoveSeat(i);
+                    }
+                }
+
+                UpdateNetworkedSeatsVisuals();
+            }
+        }
+
+        void UpdateNetworkedSeatsVisuals()
+        {
+            for (int i = 0; i < networkedSeats.Count; i++)
+            {
+                if (!networkedSeats[i].isOccupied)
+                {
+                    m_SeatButtons[i].SetOccupied(false);
                 }
                 else
                 {
-                    Debug.LogError($"Player with id {networkedSeats[i].playerID} not found");
+                    if (XRINetworkGameManager.Instance.TryGetPlayerByID(networkedSeats[i].playerID, out var player))
+                    {
+                        m_SeatButtons[i].AssignPlayerToSeat(player);
+                    }
+                    else
+                    {
+                        Debug.LogError($"Player with id {networkedSeats[i].playerID} not found");
+                    }
                 }
             }
         }
-    }
 
-    public void RequestAnySeatFromHost()
-    {
-        RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat);
-    }
-
-    public void RequestSeat(int newSeatChoice)
-    {
-        RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat, newSeatChoice);
-    }
-
-    [Rpc(SendTo.Server)]
-    void RequestSeatServerRpc(ulong localPlayerID, int currentSeatID, int newSeatID = -2)
-    {
-        if (newSeatID <= -2)    // Request any available seat
-            newSeatID = GetAnyAvailableSeats();
-
-        if (!IsSeatOccupied(newSeatID))
-            ServerAssignSeat(currentSeatID, newSeatID, localPlayerID);
-        else
-            Debug.Log("User tried to join an occupied seat");
-    }
-
-    int GetAnyAvailableSeats()
-    {
-        int availableSeat = -1;
-        for (int i = 0; i < networkedSeats.Count; i++)
+        public void RequestAnySeatFromHost()
         {
-            if (!networkedSeats[i].isOccupied)
+            RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat);
+        }
+
+        public void RequestSeat(int newSeatChoice)
+        {
+            RequestSeatServerRpc(NetworkManager.Singleton.LocalClientId, TableTop.k_CurrentSeat, newSeatChoice);
+        }
+
+        [Rpc(SendTo.Server)]
+        void RequestSeatServerRpc(ulong localPlayerID, int currentSeatID, int newSeatID = -2)
+        {
+            if (newSeatID <= -2)    // Request any available seat
+                newSeatID = GetAnyAvailableSeats();
+
+            if (!IsSeatOccupied(newSeatID))
+                ServerAssignSeat(currentSeatID, newSeatID, localPlayerID);
+            else
+                Debug.Log("User tried to join an occupied seat");
+        }
+
+        int GetAnyAvailableSeats()
+        {
+            int availableSeat = -1;
+            for (int i = 0; i < networkedSeats.Count; i++)
             {
-                availableSeat = i;
-                return availableSeat;
+                if (!networkedSeats[i].isOccupied)
+                {
+                    availableSeat = i;
+                    return availableSeat;
+                }
+            }
+
+            return availableSeat;
+        }
+
+        bool IsSeatOccupied(int seatID)
+        {
+            return seatID >= 0 && networkedSeats[seatID].isOccupied;
+        }
+
+        void ServerAssignSeat(int currentSeatID, int newSeatID, ulong localPlayerID)
+        {
+            if (currentSeatID >= 0)
+            {
+                ServerRemoveSeat(currentSeatID);
+            }
+            if (newSeatID >= 0)
+            {
+                networkedSeats[newSeatID] = new NetworkedSeat { isOccupied = true, playerID = localPlayerID };
+            }
+
+            UpdateNetworkedSeatsVisuals();
+
+            AssignSeatRpc(newSeatID, localPlayerID);
+        }
+
+        void ServerRemoveSeat(int seatID)
+        {
+            networkedSeats[seatID] = new NetworkedSeat { isOccupied = false, playerID = 0 };
+            UpdateNetworkedSeatsVisuals();
+            RemovePlayerFromSeatRpc(seatID);
+        }
+
+        [Rpc(SendTo.Everyone)]
+        void RemovePlayerFromSeatRpc(int seatID)
+        {
+            m_SeatButtons[seatID].RemovePlayerFromSeat();
+        }
+
+        [Rpc(SendTo.Everyone)]
+        void AssignSeatRpc(int seatID, ulong playerID)
+        {
+            if (XRINetworkGameManager.Instance.TryGetPlayerByID(playerID, out var player))
+            {
+                m_SeatButtons[seatID].AssignPlayerToSeat(player);
+                if (playerID == NetworkManager.Singleton.LocalClientId)
+                {
+                    m_SeatSystem.TeleportToSeat(seatID);
+                }
+            }
+            else
+            {
+                Debug.LogError($"Player with id {playerID} not found");
             }
         }
 
-        return availableSeat;
-    }
-
-    bool IsSeatOccupied(int seatID)
-    {
-        return seatID >= 0 && networkedSeats[seatID].isOccupied;
-    }
-
-    void ServerAssignSeat(int currentSeatID, int newSeatID, ulong localPlayerID)
-    {
-        if (currentSeatID >= 0)
+        public void TeleportToSpectatorSeat()
         {
-            ServerRemoveSeat(currentSeatID);
-        }
-        if (newSeatID >= 0)
-        {
-            networkedSeats[newSeatID] = new NetworkedSeat { isOccupied = true, playerID = localPlayerID };
-        }
-
-        UpdateNetworkedSeatsVisuals();
-
-        AssignSeatRpc(newSeatID, localPlayerID);
-    }
-
-    void ServerRemoveSeat(int seatID)
-    {
-        networkedSeats[seatID] = new NetworkedSeat { isOccupied = false, playerID = 0 };
-        UpdateNetworkedSeatsVisuals();
-        RemovePlayerFromSeatRpc(seatID);
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void RemovePlayerFromSeatRpc(int seatID)
-    {
-        m_SeatButtons[seatID].RemovePlayerFromSeat();
-    }
-
-    [Rpc(SendTo.Everyone)]
-    void AssignSeatRpc(int seatID, ulong playerID)
-    {
-        if (XRINetworkGameManager.Instance.TryGetPlayerByID(playerID, out var player))
-        {
-            m_SeatButtons[seatID].AssignPlayerToSeat(player);
-            if (playerID == NetworkManager.Singleton.LocalClientId)
-            {
-                m_SeatSystem.TeleportToSeat(seatID);
-            }
-        }
-        else
-        {
-            Debug.LogError($"Player with id {playerID} not found");
+            RequestSeat(-1);
         }
     }
 
-    public void TeleportToSpectatorSeat()
+    [Serializable]
+    public struct NetworkedSeat : INetworkSerializable, IEquatable<NetworkedSeat>
     {
-        RequestSeat(-1);
-    }
-}
+        public bool isOccupied;
+        public ulong playerID;
 
-[Serializable]
-public struct NetworkedSeat : INetworkSerializable, IEquatable<NetworkedSeat>
-{
-    public bool isOccupied;
-    public ulong playerID;
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref isOccupied);
+            serializer.SerializeValue(ref playerID);
+        }
 
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref isOccupied);
-        serializer.SerializeValue(ref playerID);
-    }
-
-    public readonly bool Equals(NetworkedSeat other)
-    {
-        return isOccupied == other.isOccupied && playerID == other.playerID;
+        public readonly bool Equals(NetworkedSeat other)
+        {
+            return isOccupied == other.isOccupied && playerID == other.playerID;
+        }
     }
 }

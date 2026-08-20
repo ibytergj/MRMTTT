@@ -69,7 +69,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="value">Value of the toggle.</param>
         /// <param name="clientId">Local user Id.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void UpdateToggleServerRpc(bool value, ulong clientId)
         {
             m_NetworkToggleValue.Value = value;

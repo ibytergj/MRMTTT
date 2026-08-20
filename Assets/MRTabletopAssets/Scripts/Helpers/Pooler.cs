@@ -1,7 +1,6 @@
-using UnityEngine;
 using UnityEngine.Pool;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class Pooler : MonoBehaviour
     {

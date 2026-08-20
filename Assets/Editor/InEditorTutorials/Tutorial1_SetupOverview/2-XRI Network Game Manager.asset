@@ -16,7 +16,7 @@ MonoBehaviour:
     m_Untranslated: XRI Network Game Manager
   m_Paragraphs:
     m_Items:
-    - m_Type: 6
+    - m_Type: 9
       Title:
         m_Untranslated: 
       Text:
@@ -27,6 +27,13 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_VideoUrl: 
       m_Video: {fileID: 0}
+      m_Media:
+        m_ContentType: 0
+        m_Image: {fileID: 0}
+        m_VideoClip: {fileID: 0}
+        m_Url: 
+        m_AutoStart: 1
+        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -102,10 +109,10 @@ MonoBehaviour:
           the communication with the Unity Lobby service and Unity Relay service.\n\nThe
           <b>Authentication Manager (Script)</b> component handles the authentication
           process to the Unity Services at runtime. This template uses <b>Anonymous
-          sign in</b>, which can be overriden using a sign in provider.\n\nThe Anonymous
+          sign in</b>, which can be overridden using a sign in provider.\n\nThe Anonymous
           sign in requires all connected players to have a <b>Unique Sign in</b>.
           Authentication Manager handles this automatically for ParrelSync and Multiplayer
-          Play Mode, but requires that all tags / arguments are set to be unique.
+          Play Mode, but requires that all tags or arguments are set to unique strings.
           Additionally, when testing multiple standalone builds on the same machine,
           you can pass \"PlayerArg:X\" as a command line argument to make sure your
           sign in profile is unique (make sure X is unique per player instance).\n\nUse
@@ -117,6 +124,13 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_VideoUrl: 
       m_Video: {fileID: 0}
+      m_Media:
+        m_ContentType: 0
+        m_Image: {fileID: 0}
+        m_VideoClip: {fileID: 0}
+        m_Url: 
+        m_AutoStart: 1
+        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -139,6 +153,13 @@ MonoBehaviour:
       m_Image: {fileID: 0}
       m_VideoUrl: 
       m_Video: {fileID: 0}
+      m_Media:
+        m_ContentType: 0
+        m_Image: {fileID: 0}
+        m_VideoClip: {fileID: 0}
+        m_Url: 
+        m_AutoStart: 1
+        m_Loop: 1
       m_CriteriaCompletion: 0
       m_Criteria:
         m_Items: []
@@ -171,6 +192,7 @@ MonoBehaviour:
   DoneButton:
     m_Untranslated: Done
   m_CompletedSound: {fileID: 0}
+  m_FaqEntries: []
   m_AutoAdvance: 0
   Showing:
     m_PersistentCalls:

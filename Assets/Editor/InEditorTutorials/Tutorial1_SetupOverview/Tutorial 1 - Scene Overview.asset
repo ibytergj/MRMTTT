@@ -17,9 +17,10 @@ MonoBehaviour:
   m_ProgressTrackingEnabled: 1
   m_LessonId: c2c214c0-c54d-4239-bc7a-4fb3a15a0a2b
   m_Version: 1
-  m_ReturnToPreviousScenes: 0
+  m_ReturnToPreviousScenes: 1
   m_SceneManagementBehavior: 1
-  m_Scenes: []
+  m_Scenes:
+  - {fileID: 102900000, guid: 1394aae0248047f43a644e21c762f218, type: 3}
   m_DefaultSceneCameraSettings:
     m_CameraMode: 1
     m_FocusMode: 0
@@ -77,3 +78,4 @@ MonoBehaviour:
         m_CallState: 2
   m_Scene: {fileID: 0}
   m_TutorialTitle: 
+  m_FaqEntries: []

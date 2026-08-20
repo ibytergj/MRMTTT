@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using XRMultiplayer;
 
-namespace MRTTT
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class GameModeManager : NetworkBehaviour
     {

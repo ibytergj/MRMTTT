@@ -1,10 +1,7 @@
-using System;
 using Unity.XR.CoreUtils.Bindings;
 using Unity.XR.CoreUtils.Bindings.Variables;
-using UnityEngine;
-using UnityLabs.Slices.Passthrough;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Manages the overall appearance including AR/MR/VR passthrough state and hand visuals.
@@ -112,7 +109,10 @@ namespace XRMultiplayer
                 m_HandVisuals.displayARModePassthrougHands = true;
             }
             if (m_PassthroughVolume != null)
+            {
+                m_PassthroughVolume.inflateVolume = false;
                 m_PassthroughVolume.visible = false;
+            }
         }
 
         void SetMRState()

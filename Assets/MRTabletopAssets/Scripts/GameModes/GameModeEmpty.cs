@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace MRTTT
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class GameModeEmpty : MonoBehaviour, IGameMode
     {

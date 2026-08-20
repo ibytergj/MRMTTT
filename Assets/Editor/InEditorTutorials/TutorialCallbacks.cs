@@ -66,12 +66,16 @@ public class TutorialCallbacks : ScriptableObject
 
     public void SelectNetworkManager()
     {
-        Selection.activeObject = FindFirstObjectByType<NetworkManagerXRMultiplayer>();
+        Selection.activeObject = FindAnyObjectByType<NetworkManagerXRMultiplayer>();
     }
 
     public void SelectOfflineMenuAppearancePanel()
     {
+#if UNITY_6000_5_OR_NEWER
+        var appearanceMenus = FindObjectsByType<PlayerAppearanceMenu>();
+#else
         var appearanceMenus = FindObjectsByType<PlayerAppearanceMenu>(FindObjectsSortMode.None);
+#endif
         foreach(var menu in appearanceMenus)
         {
             if(menu.transform.parent.name != "Offline Menu UI")

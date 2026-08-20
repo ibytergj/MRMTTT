@@ -168,12 +168,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8fb9e29d434c774598b9ab31e1ae48e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LeftHandRenderer: {fileID: 0}
-  m_RightHandRenderer: {fileID: 0}
+  m_HandRenderers: []
+  m_Shader: {fileID: 4800000, guid: 9c1153dea77fdfc4695c1be8712ea144, type: 3}
   m_AppearanceManger: {fileID: 5027085324836052857}
-  m_SupportedShaders:
-  - {fileID: 4800000, guid: 98d12a1b2b51411cb74909f80b9fc8ea, type: 3}
-  - {fileID: 4800000, guid: 9c1153dea77fdfc4695c1be8712ea144, type: 3}
 --- !u!114 &5027085324836052857
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -429,6 +426,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SpeedMultiplier: 1
   m_Renderer: {fileID: 1314566978914979093}
+  m_InflatedScale: {x: 20, y: 20, z: 20}
 --- !u!1 &6355624123049763967
 GameObject:
   m_ObjectHideFlags: 0

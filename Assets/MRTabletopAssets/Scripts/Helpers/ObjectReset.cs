@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Netcode.Components;
 using XRMultiplayer;
 
-namespace UnityEngine.XR.Content.Interaction
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Provides the ability to reset objects

@@ -1,9 +1,8 @@
 using TMPro;
 using Unity.Services.Lobbies.Models;
-using UnityEngine;
 using UnityEngine.UI;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class LobbyListSlotUI : MonoBehaviour
     {

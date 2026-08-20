@@ -1,3 +1,6 @@
+#if !UNITY_EDITOR_LINUX && !UNITY_STANDALONE_LINUX
+#define VIVOX_SUPPORTED
+#endif
 using System.Collections.Generic;
 using System.Text;
 using Unity.Netcode;
@@ -6,8 +9,6 @@ using Unity.XR.CoreUtils.Bindings.Variables;
 using UnityEngine;
 using UnityEngine.Android;
 using System.Collections;
-
-
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -32,6 +33,13 @@ namespace XRMultiplayer
         /// </summary>
         public static Dictionary<string, XRINetworkPlayer> m_PlayersDictionary = new();
 
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            s_HasMicrophonePermission = new BindableVariable<bool>(false);
+            m_PlayersDictionary = new Dictionary<string, XRINetworkPlayer>();
+        }
+
         /// <summary>
         /// This is the bindable variable for subscribing to the local player muting themselves.
         /// </summary>
@@ -51,16 +59,6 @@ namespace XRMultiplayer
         readonly BindableVariable<string> m_ConnectionStatus = new();
 
         /// <summary>
-        /// The chat capability of the channel, by default it should Audio Only.
-        /// </summary>
-        [SerializeField, Tooltip("The chat capability of the channel, by default it should Audio Only")] ChatCapability m_ChatCapability = ChatCapability.AudioOnly;
-
-        /// <summary>
-        /// Update frequency for audio callbacks.
-        /// </summary>
-        [SerializeField, Tooltip("Update frequency for audio callbacks")] ParticipantPropertyUpdateFrequency m_UpdateFrequency = ParticipantPropertyUpdateFrequency.TenPerSecond;
-
-        /// <summary>
         /// The maximum distance from the listener that a speaker can be heard.
         /// </summary>
         public int AudibleDistance
@@ -68,6 +66,7 @@ namespace XRMultiplayer
             get => m_AudibleDistance;
             set => m_AudibleDistance = value;
         }
+
         [Header("Voice Chat Properties")]
         [SerializeField, Tooltip("The maximum distance from the listener that a speaker can be heard.")]
         int m_AudibleDistance = 32;
@@ -80,6 +79,7 @@ namespace XRMultiplayer
             get => m_ConversationalDistance;
             set => m_ConversationalDistance = value;
         }
+
         [SerializeField, Tooltip("The distance from the listener within which a speaker’s voice is heard at its original volume, and beyond which the speaker's voice begins to fade.")]
         int m_ConversationalDistance = 7;
 
@@ -91,6 +91,7 @@ namespace XRMultiplayer
             get => m_AudioFadeIntensity;
             set => m_AudioFadeIntensity = value;
         }
+
         [SerializeField, Tooltip("The strength of the audio fade effect as the speaker moves away from the listener past the conversational distance.")]
         float m_AudioFadeIntensity = 1.0f;
 
@@ -104,18 +105,34 @@ namespace XRMultiplayer
             get => m_AudioFadeModel;
             set => m_AudioFadeModel = value;
         }
+
         [SerializeField, Tooltip("The model that determines the distance falloff of the voice chat.")]
         AudioFadeModel m_AudioFadeModel = AudioFadeModel.LinearByDistance;
 
         /// <summary>
         /// The minimum and maximum volume for the voice output.
         /// </summary>
-        [SerializeField, Tooltip("The minimum and maximum volume for the voice output.")] Vector2 m_MinMaxVoiceOutputVolume = new Vector2(-10.0f, 10.0f);
+        [SerializeField, Tooltip("The minimum and maximum volume for the voice output.")]
+        Vector2 m_MinMaxVoiceOutputVolume = new Vector2(-10.0f, 10.0f);
 
         /// <summary>
         /// The minimum and maximum volume for the voice input.
         /// </summary>
-        [SerializeField, Tooltip("The minimum and maximum volume for the voice input.")] Vector2 m_MinMaxVoiceInputVolume = new Vector2(-10.0f, 10.0f);
+        [SerializeField, Tooltip("The minimum and maximum volume for the voice input.")]
+        Vector2 m_MinMaxVoiceInputVolume = new Vector2(-10.0f, 10.0f);
+
+#pragma warning disable CS0414 // value is never used, only when Vivox is not available on the platform, such as with Linux
+        /// <summary>
+        /// The chat capability of the channel, by default it should Audio Only.
+        /// </summary>
+        [SerializeField, Tooltip("The chat capability of the channel, by default it should Audio Only")]
+        ChatCapability m_ChatCapability = ChatCapability.AudioOnly;
+
+        /// <summary>
+        /// Update frequency for audio callbacks.
+        /// </summary>
+        [SerializeField, Tooltip("Update frequency for audio callbacks")]
+        ParticipantPropertyUpdateFrequency m_UpdateFrequency = ParticipantPropertyUpdateFrequency.TenPerSecond;
 
         /// <summary>
         /// The local participant in the voice chat.
@@ -131,6 +148,7 @@ namespace XRMultiplayer
         /// If the player is connected to a room.
         /// </summary>
         bool m_ConnectedToRoom;
+#pragma warning restore CS0414 // value is never used, only when Vivox is not available on the platform, such as with Linux
 
         /// <summary>
         /// If the voice chat service is initialized.
@@ -149,8 +167,10 @@ namespace XRMultiplayer
         ///<inheritdoc/>
         private void OnDestroy()
         {
+#if VIVOX_SUPPORTED
             VivoxService.Instance.LoggedIn -= LocalUserLoggedIn;
             UnbindParticipantEvents();
+#endif
         }
 
         /// <summary>
@@ -224,8 +244,11 @@ namespace XRMultiplayer
             PlayerHudNotification.Instance.ShowText("Microphone Permissions Granted", 3.0f);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async void EnableVoiceChat()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+#if VIVOX_SUPPORTED
             try
             {
                 await VivoxService.Instance.InitializeAsync();
@@ -237,11 +260,14 @@ namespace XRMultiplayer
             {
 #if UNITY_EDITOR
                 EditorGUI.hyperLinkClicked += HyperlinkClicked;
-                Utils.Log($"{k_DebugPrepend}Vivox Initialization Failed. Please check the Vivox Service Window <a data=\"OpenVivoxSettings\"><b>Project Settings > Services > Vivox</b></a>\n\n{e}", 2);
+                Utils.Log($"{k_DebugPrepend}Vivox Initialization Failed. Please check the Vivox Service Window <a data=\"OpenVivoxSettings\"><b>Project Settings > Services > Vivox</b></a>\n\n{e}", LogLevel.Error);
 #else
-                Utils.Log($"{k_DebugPrepend}Vivox Initialization Failed.\n\n{e}", 2);
+                Utils.Log($"{k_DebugPrepend}Vivox Initialization Failed.\n\n{e}", LogLevel.Error);
 #endif
             }
+#else // VIVOX_SUPPORTED
+            Utils.Log($"{k_DebugPrepend}Vivox Initialization skipped: not supported on this platform.", LogLevel.Normal);
+#endif // VIVOX_SUPPORTED
         }
 
 #if UNITY_EDITOR
@@ -255,10 +281,12 @@ namespace XRMultiplayer
 #endif
 
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async void Login(string displayName, string roomCode)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             m_CurrentLobbyId = roomCode;
-
+#if VIVOX_SUPPORTED
             LoginOptions loginOptions = new()
             {
                 DisplayName = displayName,
@@ -283,20 +311,26 @@ namespace XRMultiplayer
             {
                 Utils.Log($"{k_DebugPrepend}Attempting to login to voice chat while already logged in.", 1);
             }
+#endif
         }
 
         void LocalUserLoggedIn()
         {
+#if VIVOX_SUPPORTED
             if (VivoxService.Instance.IsLoggedIn)
             {
                 Utils.Log($"{k_DebugPrepend}Local User Logged In to Voice Chat.");
                 m_ConnectionStatus.Value = "Joining Voice Channel";
                 ConnectToVoiceChannel();
             }
+#endif
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async void ConnectToVoiceChannel()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+#if VIVOX_SUPPORTED
             if (NetworkManager.Singleton.IsConnectedClient & !m_ConnectedToRoom)
             {
                 Channel3DProperties properties = new(AudibleDistance, ConversationalDistance, AudioFadeIntensity, AudioFadeModel);
@@ -313,24 +347,33 @@ namespace XRMultiplayer
             {
                 Utils.Log($"{k_DebugPrepend}Failed to join Voice Chat, Player is not connected to a game", 1);
             }
+#endif
         }
 
         void BindToParticipantEvents()
         {
+#if VIVOX_SUPPORTED
             VivoxService.Instance.ParticipantAddedToChannel += OnParticipantAdded;
             VivoxService.Instance.ParticipantRemovedFromChannel += OnParticipantRemoved;
+#endif
         }
 
         void UnbindParticipantEvents()
         {
+#if VIVOX_SUPPORTED
             VivoxService.Instance.ParticipantAddedToChannel -= OnParticipantAdded;
             VivoxService.Instance.ParticipantRemovedFromChannel -= OnParticipantRemoved;
+#endif
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         async void DisconnectAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+#if VIVOX_SUPPORTED
             m_ConnectionStatus.Value = "Leaving current channel";
             await VivoxService.Instance.LeaveAllChannelsAsync();
+#endif
         }
 
         [ContextMenu("Reconnect")]
@@ -339,8 +382,11 @@ namespace XRMultiplayer
             ReconnectAsync();
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         async void ReconnectAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+#if VIVOX_SUPPORTED
             m_ConnectionStatus.Value = "Leaving current channel";
             await VivoxService.Instance.LeaveAllChannelsAsync();
 
@@ -353,10 +399,12 @@ namespace XRMultiplayer
                 m_ConnectionStatus.Value = "Reconnecting to Voice Chat";
                 Login(XRINetworkGameManager.AuthenicationId, XRINetworkGameManager.Instance.lobbyManager.connectedLobby.Id);
             }
+#endif
         }
 
         public void LogOut()
         {
+#if VIVOX_SUPPORTED
             Utils.Log($"{k_DebugPrepend}Logging out of Voice Chat.");
             if (VivoxService.Instance.IsLoggedIn && m_ConnectedToRoom)
             {
@@ -364,12 +412,13 @@ namespace XRMultiplayer
                 VivoxService.Instance.LeaveAllChannelsAsync();
                 VivoxService.Instance.LogoutAsync();
             }
-
+#endif
             m_PlayersDictionary.Clear();
         }
 
         public void Set3DAudio(Transform localPlayerHeadTransform)
         {
+#if VIVOX_SUPPORTED
             if (VivoxService.Instance.IsLoggedIn && VivoxService.Instance.ActiveChannels.Count > 0 && VivoxService.Instance.TransmittingChannels[0] == m_CurrentLobbyId)
             {
                 VivoxService.Instance.Set3DPosition(localPlayerHeadTransform.position,
@@ -378,6 +427,7 @@ namespace XRMultiplayer
                     localPlayerHeadTransform.up,
                     m_CurrentLobbyId);
             }
+#endif
         }
 
 
@@ -392,6 +442,7 @@ namespace XRMultiplayer
                 m_SelfMuted.Value = false;
             }
 
+#if VIVOX_SUPPORTED
             if (VivoxService.Instance.IsLoggedIn)
             {
                 if (m_SelfMuted.Value)
@@ -403,7 +454,7 @@ namespace XRMultiplayer
                     VivoxService.Instance.UnmuteInputDevice();
                 }
             }
-
+#endif
             if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
             {
                 PlayerHudNotification.Instance.ShowText(k_MicrophonePersmissionDialogue, 3.0f);
@@ -414,8 +465,9 @@ namespace XRMultiplayer
         {
             volume = Mathf.Clamp(volume, m_MinMaxVoiceInputVolume.x, m_MinMaxVoiceInputVolume.y);
 
+#if VIVOX_SUPPORTED
             VivoxService.Instance.SetInputDeviceVolume((int)volume);
-
+#endif
             // Since the slider goes to .001 percent, add a buffer to mute the mic
             if (volume <= (m_MinMaxVoiceInputVolume.x + .05f))
             {
@@ -429,10 +481,13 @@ namespace XRMultiplayer
 
         public void SetOutputVolume(float volume)
         {
+#if VIVOX_SUPPORTED
             volume = Mathf.Clamp(volume, m_MinMaxVoiceOutputVolume.x, m_MinMaxVoiceOutputVolume.y);
             VivoxService.Instance.SetOutputDeviceVolume((int)volume);
+#endif
         }
 
+#if VIVOX_SUPPORTED
         void OnParticipantAdded(VivoxParticipant participant)
         {
             if (participant.IsSelf)
@@ -448,7 +503,11 @@ namespace XRMultiplayer
             else
             {
                 Utils.Log($"{k_DebugPrepend}Non-Local Player Joined Voice Channel: {participant.PlayerId}");
+#if UNITY_6000_5_OR_NEWER
+                foreach (XRINetworkPlayer player in FindObjectsByType<XRINetworkPlayer>())
+#else
                 foreach (XRINetworkPlayer player in FindObjectsByType<XRINetworkPlayer>(FindObjectsSortMode.None))
+#endif
                 {
                     if (player.playerVoiceId == participant.PlayerId)
                     {
@@ -470,14 +529,17 @@ namespace XRMultiplayer
                 PlayerHudNotification.Instance.ShowText("Voice Chat Disconnected", 3.0f);
             }
         }
+#endif
 
         public VivoxParticipant GetVivoxParticipantById(string participantPlayerId)
         {
+#if VIVOX_SUPPORTED
             foreach (var participant in VivoxService.Instance.ActiveChannels[m_CurrentLobbyId])
             {
                 if (participantPlayerId == participant.PlayerId)
                     return participant;
             }
+#endif
             return null;
         }
 
@@ -516,6 +578,7 @@ namespace XRMultiplayer
         [ContextMenu("Debug Particpants")]
         void DebugParticipants()
         {
+#if VIVOX_SUPPORTED
             StringBuilder output = new StringBuilder();
             output.Append($"[Room Type: Positional\n[Room Code: {m_CurrentLobbyId}]");
             foreach (var participant in VivoxService.Instance.ActiveChannels[m_CurrentLobbyId])
@@ -523,6 +586,7 @@ namespace XRMultiplayer
                 output.Append($"\n[ParticipantID: {participant.PlayerId}]\n[AudioEnergy: {participant.AudioEnergy}]");
             }
             Utils.Log($"{k_DebugPrepend}{output}");
+#endif
         }
     }
 }

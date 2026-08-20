@@ -1,7 +1,6 @@
 using System;
-using UnityEngine;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// A simple class used for callbacks when OnTriggerEnter or OnTriggerExit is called.

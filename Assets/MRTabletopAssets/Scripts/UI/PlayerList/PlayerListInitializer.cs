@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class PlayerListInitializer : MonoBehaviour
     {
@@ -17,7 +15,11 @@ namespace XRMultiplayer
         [ContextMenu("Find Player List UIs")]
         void FindPlayerListUIs()
         {
+#if UNITY_6000_5_OR_NEWER
+            m_PlayerListUIs = FindObjectsByType<PlayerListUI>(FindObjectsInactive.Include);
+#else
             m_PlayerListUIs = FindObjectsByType<PlayerListUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#endif
         }
     }
 }

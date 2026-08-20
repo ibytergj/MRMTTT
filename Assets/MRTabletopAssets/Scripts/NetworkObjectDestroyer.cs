@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEngine;
+using XRMultiplayer;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// This class is responsible for handling the networked despawning of objects based within

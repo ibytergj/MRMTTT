@@ -49,17 +49,26 @@ namespace XRMultiplayer
                 enabled = false;
                 return;
             }
-
-            m_NetworkPlayer.onSpawnedLocal += PlayerSpawnedLocal;
-            m_NetworkPlayer.onSpawnedAll += PlayerSpawnedAll;
-            m_NetworkPlayer.onColorUpdated += SetPlayerColor;
         }
 
-        public virtual void OnDestroy()
+        public virtual void OnEnable()
         {
-            m_NetworkPlayer.onSpawnedLocal -= PlayerSpawnedLocal;
-            m_NetworkPlayer.onSpawnedAll -= PlayerSpawnedAll;
-            m_NetworkPlayer.onColorUpdated -= SetPlayerColor;
+            if (m_NetworkPlayer != null)
+            {
+                m_NetworkPlayer.onSpawnedLocal += PlayerSpawnedLocal;
+                m_NetworkPlayer.onSpawnedAll += PlayerSpawnedAll;
+                m_NetworkPlayer.onColorUpdated += SetPlayerColor;
+            }
+        }
+
+        public virtual void OnDisable()
+        {
+            if (m_NetworkPlayer != null)
+            {
+                m_NetworkPlayer.onSpawnedLocal -= PlayerSpawnedLocal;
+                m_NetworkPlayer.onSpawnedAll -= PlayerSpawnedAll;
+                m_NetworkPlayer.onColorUpdated -= SetPlayerColor;
+            }
         }
 
         public virtual void Update()
@@ -76,7 +85,6 @@ namespace XRMultiplayer
         public virtual void PlayerSpawnedLocal()
         {
             m_LocalPlayerMaterialSwap.SwapMaterials();
-            Debug.Log("Player spawned locally. Swapping materials and setting layer to Mirror.");
             int layer = LayerMask.NameToLayer("Mirror");
             foreach (var r in m_HeadRends)
             {

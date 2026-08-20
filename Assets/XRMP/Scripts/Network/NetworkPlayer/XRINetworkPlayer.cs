@@ -1,10 +1,11 @@
-using UnityEngine;
-using Unity.Netcode;
-using Unity.XR.CoreUtils;
-using Unity.Collections;
 using System;
+using Unity.Collections;
+using Unity.Netcode;
 using Unity.Services.Vivox;
+using Unity.XR.CoreUtils;
 using Unity.XR.CoreUtils.Bindings.Variables;
+using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace XRMultiplayer
 {
@@ -67,6 +68,7 @@ namespace XRMultiplayer
         /// <summary>
         /// Bindable Variable used for other clients to mute this user locally.
         /// </summary>
+        [NonSerialized]
         public BindableVariable<bool> squelched = new BindableVariable<bool>(false);
 
         /// <summary>
@@ -93,14 +95,16 @@ namespace XRMultiplayer
         public Color playerColor { get => m_PlayerColor.Value; }
         readonly NetworkVariable<Color> m_PlayerColor = new(Color.white, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-        [HideInInspector]
-        public readonly NetworkVariable<bool> selfMuted = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        public NetworkVariable<int> platformType => m_PlatformType;
+        readonly NetworkVariable<int> m_PlatformType = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+        [HideInInspector] public readonly NetworkVariable<bool> selfMuted = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
 
         /// <summary>
         /// Player Name Tag.
         /// </summary>
-        [Header("Player Name Tag"), SerializeField, Tooltip("Player Name Tag.")]
-        protected bool m_UpdateObjectName = true;
+        [Header("Player Name Tag"), SerializeField, Tooltip("Player Name Tag.")] protected bool m_UpdateObjectName = true;
 
 
         // /// <summary>
@@ -111,14 +115,12 @@ namespace XRMultiplayer
         /// <summary>
         /// Hand Objects to be disabled for the local player.
         /// </summary>
-        [Header("Networked Hands"), SerializeField, Tooltip("Hand Objects to be disabled for the local player.")]
-        protected GameObject[] m_handsObjects;
+        [Header("Networked Hands"), SerializeField, Tooltip("Hand Objects to be disabled for the local player.")] protected GameObject[] m_handsObjects;
 
         /// <summary>
         /// Player Name Tag.
         /// </summary>
-        [Header("Player Name Tag"), SerializeField, Tooltip("Player Name Tag.")]
-        protected PlayerNameTag m_PlayerNameTag;
+        [Header("Player Name Tag"), SerializeField, Tooltip("Player Name Tag.")] protected PlayerNameTag m_PlayerNameTag;
 
         /// <summary>
         /// Internal references to the Local Player Transforms.
@@ -167,7 +169,7 @@ namespace XRMultiplayer
 
         protected void Awake()
         {
-            m_VoiceChat = FindFirstObjectByType<VoiceChatManager>();
+            m_VoiceChat = FindAnyObjectByType<VoiceChatManager>();
             m_VoicePositionCheckTimer = m_VoicePositionUpdateTime;
         }
 
@@ -213,10 +215,14 @@ namespace XRMultiplayer
         {
             if (!IsOwner) return;
 
-            // Set transforms to be replicated with ClientNetworkTransforms
-            leftHand.SetPositionAndRotation(m_LeftHandOrigin.position, m_LeftHandOrigin.rotation);
-            rightHand.SetPositionAndRotation(m_RightHandOrigin.position, m_RightHandOrigin.rotation);
-            head.SetPositionAndRotation(m_HeadOrigin.position, m_HeadOrigin.rotation);
+            if (m_HeadOrigin != null)
+                head.SetPositionAndRotation(m_HeadOrigin.position, m_HeadOrigin.rotation);
+
+            if (m_LeftHandOrigin != null)
+                leftHand.SetPositionAndRotation(m_LeftHandOrigin.position, m_LeftHandOrigin.rotation);
+
+            if (m_RightHandOrigin != null)
+                rightHand.SetPositionAndRotation(m_RightHandOrigin.position, m_RightHandOrigin.rotation);
         }
 
         ///<inheritdoc/>
@@ -245,14 +251,19 @@ namespace XRMultiplayer
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            if (IsOwner)
+            if (IsLocalPlayer)
             {
                 // Set Local Player.
                 LocalPlayer = this;
+                //XRINetworkGameManager.
                 XRINetworkGameManager.Instance.LocalPlayerConnected(NetworkObject.OwnerClientId);
 
+                // Setup Platform Type
+                m_PlatformType.Value = (int)XRPlatformUnderstanding.CurrentPlatform;
+                Debug.Log($"XRINetworkPlayer: Platform type set to {m_PlatformType.Value}");
+
                 // Get Origin and set head.
-                m_XROrigin = FindFirstObjectByType<XROrigin>();
+                m_XROrigin = FindAnyObjectByType<XROrigin>();
                 if (m_XROrigin != null)
                 {
                     m_HeadOrigin = m_XROrigin.Camera.transform;
@@ -350,7 +361,7 @@ namespace XRMultiplayer
             UpdatePlayerName(new FixedString128Bytes(""), m_PlayerName.Value);
 
             // Check if WorldCanvas exists
-            WorldCanvas worldCanvas = FindFirstObjectByType<WorldCanvas>();
+            WorldCanvas worldCanvas = FindAnyObjectByType<WorldCanvas>();
             if (worldCanvas != null)
             {
                 // If we are using a World Canvas, reparent name tag and destroy local canvas.
@@ -407,7 +418,6 @@ namespace XRMultiplayer
             if (m_VivoxParticipant != null)
             {
                 m_VivoxParticipant.ParticipantAudioEnergyChanged += ParticipantAudioEnergyChanged;
-                m_VivoxParticipant.ParticipantMuteStateChanged += ParticipantMutestateChanged;
                 m_PlayerNameTag.PlayerConnectedToVoice();
             }
             else
@@ -420,12 +430,6 @@ namespace XRMultiplayer
                 VoiceChatManager.AddNewVivoxPlayer(playerVoiceId, this);
             }
         }
-
-        private void ParticipantMutestateChanged()
-        {
-            squelched.Value = m_VivoxParticipant.IsMuted;
-        }
-
         private void ParticipantAudioEnergyChanged()
         {
             UpdatePlayerVoiceEnergy((float)m_VivoxParticipant.AudioEnergy);
@@ -443,14 +447,14 @@ namespace XRMultiplayer
         }
 
         /// <summary>
-        /// Called from clients to mute this player locally for the client it was called from.
-        /// This won't execute on the local player.
+        /// Called from clients to mute this player locally for that client.
         /// </summary>
         public void ToggleSquelch()
         {
             if (m_VivoxParticipant != null)
             {
-                if (!m_VivoxParticipant.IsMuted)
+                squelched.Value = !squelched.Value;
+                if (squelched.Value)
                     m_VivoxParticipant.MutePlayerLocally();
                 else
                     m_VivoxParticipant.UnmutePlayerLocally();

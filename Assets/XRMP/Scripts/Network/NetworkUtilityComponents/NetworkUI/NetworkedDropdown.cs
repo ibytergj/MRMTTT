@@ -61,7 +61,7 @@ namespace XRMultiplayer
         /// </summary>
         /// <param name="dropdownValue">Value of the dropdown.</param>
         /// <param name="clientId">Local user Id.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void UpdateDropdownServerRpc(int dropdownValue, ulong clientId)
         {
             UpdateDropdownClientRpc(dropdownValue, clientId);

@@ -1,9 +1,8 @@
 using TMPro;
-using UnityEngine;
+using XRMultiplayer;
 using UnityEngine.UI;
-using WebSocketSharp;
 
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public class PlayerSlot : MonoBehaviour
     {
@@ -56,7 +55,7 @@ namespace XRMultiplayer
 
         void UpdateName(string newName)
         {
-            if (!newName.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(newName))
             {
                 string playerName = newName;
                 if (m_Player.IsLocalPlayer)

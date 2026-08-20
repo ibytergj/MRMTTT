@@ -3954,9 +3954,29 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 8321923966460561635}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Target
+      value: 
+      objectReference: {fileID: 5779751410324461684}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -3964,8 +3984,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_MethodName
+      value: Close
+      objectReference: {fileID: 0}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: XRMultiplayer.PlayerOptions, MRTTT
+      objectReference: {fileID: 0}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_TargetAssemblyTypeName
+      value: UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.XRKeyboard,
+        Unity.XR.Interaction.Toolkit.Samples.SpatialKeyboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 713834411879593816, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 804557101356829786, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
@@ -4374,9 +4410,29 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 8321923966460561635}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Target
+      value: 
+      objectReference: {fileID: 5779751410324461684}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -4384,8 +4440,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_MethodName
+      value: Close
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: XRMultiplayer.PlayerOptions, MRTTT
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_TargetAssemblyTypeName
+      value: UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.XRKeyboard,
+        Unity.XR.Interaction.Toolkit.Samples.SpatialKeyboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507214015819012718, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 2520749072070448432, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
@@ -4454,13 +4526,49 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 8321923966460561635}
     - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_Target
+      value: 
+      objectReference: {fileID: 5779751410324461684}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: TogglePanel
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_MethodName
+      value: Close
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_TargetAssemblyTypeName
+      value: UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.XRKeyboard,
+        Unity.XR.Interaction.Toolkit.Samples.SpatialKeyboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 2922293840808279194, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[3].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 2961208148985141018, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
@@ -4659,9 +4767,29 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 8321923966460561635}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Target
+      value: 
+      objectReference: {fileID: 5779751410324461684}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -4669,8 +4797,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_MethodName
+      value: Close
+      objectReference: {fileID: 0}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: XRMultiplayer.PlayerOptions, MRTTT
+      objectReference: {fileID: 0}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_TargetAssemblyTypeName
+      value: UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.XRKeyboard,
+        Unity.XR.Interaction.Toolkit.Samples.SpatialKeyboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 4850393968418746821, guid: 131a9cc496ab0f141aa13146e69b28ec,
+        type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[4].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 5083972310617106049, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
@@ -5322,11 +5466,6 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -7.5
       objectReference: {fileID: 0}
-    - target: {fileID: 6998504922551981203, guid: 131a9cc496ab0f141aa13146e69b28ec,
-        type: 3}
-      propertyPath: m_CameraTransform
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 7092159336487404329, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: m_LocalPosition.z
@@ -5705,12 +5844,12 @@ PrefabInstance:
     - target: {fileID: 8174718380763491602, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00033569336
+      value: -0.00036621094
       objectReference: {fileID: 0}
     - target: {fileID: 8174718380763491602, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 161.70018
+      value: 161.70024
       objectReference: {fileID: 0}
     - target: {fileID: 8195626855071643078, guid: 131a9cc496ab0f141aa13146e69b28ec,
         type: 3}

@@ -1,9 +1,7 @@
 using Unity.XR.CoreUtils.Bindings;
-using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
-using UnityLabs.Slices.Systems;
 
-namespace UnityLabs.Slices.Environment
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Handles the animated showing/hiding of the default scene background when an additive scene is either loaded or unloaded

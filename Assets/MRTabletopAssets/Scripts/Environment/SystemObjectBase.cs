@@ -1,12 +1,11 @@
 using System.Threading.Tasks;
 using Unity.XR.CoreUtils.Bindings;
 using Unity.XR.CoreUtils.Bindings.Variables;
-using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-namespace UnityLabs.Slices.Systems
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     public abstract class SystemObjectBase : ScriptableObject
     {

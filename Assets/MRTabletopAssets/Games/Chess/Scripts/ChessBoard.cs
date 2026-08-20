@@ -254,7 +254,6 @@ namespace UnityLabs.Slices.Games.Chess
         public void OnGameConnectChanged(bool connected)
         {
             m_GameConnected.Value = connected;
-            Debug.Log($"Game Connected: {connected}");
 
             // this may now be unnnecessary since game disconnect would just unload whole board?
             // if (!connected)

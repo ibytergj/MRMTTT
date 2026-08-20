@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace XRMultiplayer
+namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     [ExecuteInEditMode]
     public class SnapToPlayerHeight : MonoBehaviour

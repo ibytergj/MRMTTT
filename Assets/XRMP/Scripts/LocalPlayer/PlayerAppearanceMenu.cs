@@ -17,19 +17,15 @@ namespace XRMultiplayer
         [SerializeField] Image m_PlayerIconColor;
 
 
-        void Awake()
+        void OnEnable()
         {
             XRINetworkGameManager.LocalPlayerName.Subscribe(SetPlayerName);
             XRINetworkGameManager.LocalPlayerColor.Subscribe(SetPlayerColor);
-        }
-
-        void Start()
-        {
             SetPlayerColor(XRINetworkGameManager.LocalPlayerColor.Value);
             SetPlayerName(XRINetworkGameManager.LocalPlayerName.Value);
         }
 
-        void OnDestroy()
+        void OnDisable()
         {
             XRINetworkGameManager.LocalPlayerName.Unsubscribe(SetPlayerName);
             XRINetworkGameManager.LocalPlayerColor.Unsubscribe(SetPlayerColor);

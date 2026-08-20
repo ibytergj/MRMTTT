@@ -71,7 +71,7 @@ namespace UnityLabs.Slices.Games.Chess
             ClaimOwnershipServerRpc(NetworkManager.Singleton.LocalClientId);
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void ClaimOwnershipServerRpc(ulong id)
         {
             if (NetworkObject.OwnerClientId != id)
@@ -260,13 +260,13 @@ namespace UnityLabs.Slices.Games.Chess
             if (m_ReplicatedBoardTurn.IsDirty()) m_ReplicatedTimer.Value = m_ChessBoard.moveTimer;
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void CommitAddMoveServerRpc(ushort move)
         {
             m_ReplicatedMoveList.Add(move);
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void CommitRemoveMoveServerRpc(int index)
         {
             m_ReplicatedMoveList.RemoveAt(index);
