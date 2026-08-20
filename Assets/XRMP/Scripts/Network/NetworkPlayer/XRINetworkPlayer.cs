@@ -335,7 +335,22 @@ namespace XRMultiplayer
         /// <remarks>Only called on Local Player.</remarks>
         protected virtual void UpdateLocalPlayerColor(Color color)
         {
+            Color oldColor = m_PlayerColor.Value;
             m_PlayerColor.Value = XRINetworkGameManager.LocalPlayerColor.Value;
+
+            // For the host player, if the color hasn't changed, the NetworkVariable callback will not fire,
+            // so we need to manually update the avatar.
+            if (IsServer && oldColor == m_PlayerColor.Value)
+            {
+                // Directly update the avatar visuals
+                if (TryGetComponent(out XRAvatarVisuals avatarVisuals))
+                {
+                    avatarVisuals.SetPlayerColor(color);
+                }
+
+                // Manually invoke the color updated event
+                onColorUpdated?.Invoke(color);
+            }
         }
 
         /// <summary>
@@ -400,7 +415,38 @@ namespace XRMultiplayer
         /// </summary><remarks>Invokes the callback <see cref="onColorUpdated"/>.</remarks>
         void UpdatePlayerColor(Color oldColor, Color newColor)
         {
+            // For the host player, directly update the avatar visuals
+            if (IsServer && IsOwner)
+            {
+                if (TryGetComponent(out XRAvatarVisuals avatarVisuals))
+                {
+                    avatarVisuals.SetPlayerColor(newColor);
+                }
+            }
+
             onColorUpdated?.Invoke(newColor);
+        }
+
+        /// <summary>
+        /// Forces an update of the player color, even if the value hasn't changed.
+        /// This ensures the avatar visuals are updated properly.
+        /// </summary>
+        public void ForceUpdatePlayerColor(Color color)
+        {
+            // Set the network variable
+            m_PlayerColor.Value = color;
+
+            // For the host player, directly update the avatar visuals
+            if (IsServer && IsOwner)
+            {
+                if (TryGetComponent(out XRAvatarVisuals avatarVisuals))
+                {
+                    avatarVisuals.SetPlayerColor(color);
+                }
+            }
+
+            // Manually invoke the color updated event
+            onColorUpdated?.Invoke(color);
         }
 
         void UpdatePlayerVoiceEnergy(float current)

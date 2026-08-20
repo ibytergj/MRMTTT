@@ -49,7 +49,7 @@ namespace XRMultiplayer
         /// <summary>
         /// Max amount of players allowed when creating a new room.
         /// </summary>
-        public const int maxPlayers = 4;
+        public const int maxPlayers = 8;
 
         const string k_DefaultPlayerName = "Unity Creator";
 
