@@ -1,4 +1,12 @@
 {
-  "PlayerTags": [],
+  "PlayerTags": [
+    "Player2",
+    "Player3",
+    "Player4",
+    "Paul",
+    "Patti",
+    "Glenn",
+    "Lori"
+  ],
   "version": "6000.5.9f1"
 }
