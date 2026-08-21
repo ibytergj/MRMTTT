@@ -5391,7 +5391,7 @@ PrefabInstance:
     - target: {fileID: 4188808287723119534, guid: 33567ed59bf9f2a49a65a7d7f9758e52,
         type: 3}
       propertyPath: m_CurrentValue
-      value: 4
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4188808287723119534, guid: 33567ed59bf9f2a49a65a7d7f9758e52,
         type: 3}
@@ -5401,7 +5401,7 @@ PrefabInstance:
     - target: {fileID: 4188808287723119534, guid: 33567ed59bf9f2a49a65a7d7f9758e52,
         type: 3}
       propertyPath: m_MinMaxValue.y
-      value: 4
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4188808287723119534, guid: 33567ed59bf9f2a49a65a7d7f9758e52,
         type: 3}
