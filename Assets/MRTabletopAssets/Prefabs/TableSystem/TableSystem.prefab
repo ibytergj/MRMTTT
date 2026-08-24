@@ -608,11 +608,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Table Handle Capsule
       objectReference: {fileID: 0}
-    - target: {fileID: 6881641411538821410, guid: 2ff0cb42522228d449b7a8c51599cbb2,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 9109736665812552921, guid: 2ff0cb42522228d449b7a8c51599cbb2,
         type: 3}
       propertyPath: m_LocalPosition.x
