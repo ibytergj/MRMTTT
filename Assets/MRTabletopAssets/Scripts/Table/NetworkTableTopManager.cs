@@ -223,19 +223,37 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         void UpdateNetworkedSeatsVisuals()
         {
+            // Silent lookup: TryGetPlayerByID logs errors for players whose
+            // objects have not spawned on this peer yet, which is a normal
+            // transient state during joins.
+            var spawnedPlayers = FindObjectsByType<XRINetworkPlayer>();
+
             for (int i = 0; i < networkedSeats.Count; i++)
             {
                 if (!networkedSeats[i].isOccupied)
                 {
                     m_SeatButtons[i].SetOccupied(false);
+                    continue;
                 }
-                else if (XRINetworkGameManager.Instance.TryGetPlayerByID(networkedSeats[i].playerID, out var player))
+
+                var player = FindByOwner(spawnedPlayers, networkedSeats[i].playerID);
+                if (player != null)
                 {
                     m_SeatButtons[i].AssignPlayerToSeat(player);
                 }
-                // else: the player object has not spawned on this peer yet;
-                // playerStateChanged re-runs this pass when it does.
+                // else: not spawned on this peer yet; playerStateChanged
+                // re-runs this pass when it does.
             }
+        }
+
+        static XRINetworkPlayer FindByOwner(XRINetworkPlayer[] players, ulong playerID)
+        {
+            foreach (var player in players)
+            {
+                if (player.OwnerClientId == playerID)
+                    return player;
+            }
+            return null;
         }
 
         public void RequestAnySeatFromHost()
@@ -346,13 +364,15 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         [Rpc(SendTo.Everyone)]
         void AssignSeatRpc(int seatID, ulong playerID)
         {
-            if (seatID >= 0 && XRINetworkGameManager.Instance.TryGetPlayerByID(playerID, out var player))
+            if (seatID >= 0)
             {
-                m_SeatButtons[seatID].AssignPlayerToSeat(player);
+                var player = FindByOwner(FindObjectsByType<XRINetworkPlayer>(), playerID);
+                if (player != null)
+                    m_SeatButtons[seatID].AssignPlayerToSeat(player);
+                // else: not spawned on this peer yet; visuals reconcile via
+                // playerStateChanged. The local teleport below never hits
+                // this race (the local player always exists locally).
             }
-            // else: not spawned on this peer yet; visuals reconcile via
-            // playerStateChanged. The local teleport below never hits this
-            // race (the local player always exists locally).
 
             if (playerID == NetworkManager.Singleton.LocalClientId)
             {
