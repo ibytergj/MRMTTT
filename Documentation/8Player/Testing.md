@@ -25,6 +25,16 @@ builds.
 > let freshly launched virtual players sit for a few seconds before
 > entering Play Mode, or exit and re-enter Play Mode — on re-entry the
 > binding is ready and the join list populates normally.
+>
+> A second flavor of the same race: a player can log
+> "Checking for AuthenticationService.Instance before initialized"
+> (ServicesInitializationException) when Play Mode starts before Unity
+> Services core init finishes in that editor process; that player never
+> authenticates and cannot join until Play Mode is re-entered. Also
+> pristine-template behavior; it is probabilistic per player (e.g. 2 of
+> 3 virtual players join, one does not). Same workaround. Note MPPM
+> intentionally syncs Play Mode across all players, so re-entering play
+> restarts every player.
 
 ### Windows build players (5–8)
 
