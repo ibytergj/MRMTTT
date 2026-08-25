@@ -26,6 +26,16 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         TableLayoutConfig m_LayoutConfig;
         public TableLayoutConfig layoutConfig => m_LayoutConfig;
 
+        /// <summary>
+        /// Runtime injection point: NetworkTableTopManager pushes its config
+        /// here so both components always agree (the serialized reference is
+        /// for editor preview).
+        /// </summary>
+        public void SetLayoutConfig(TableLayoutConfig config)
+        {
+            m_LayoutConfig = config;
+        }
+
         /// <summary>Raised after <see cref="SetSeatLayout"/> applies a layout, with the new seat count.</summary>
         public event Action<int> seatLayoutChanged;
 

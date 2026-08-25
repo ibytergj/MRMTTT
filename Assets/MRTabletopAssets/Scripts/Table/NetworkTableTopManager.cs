@@ -119,6 +119,8 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
             void Apply()
             {
+                if (m_Config != null)
+                    m_TableTop.SetLayoutConfig(m_Config);
                 m_TableTop.SetSeatLayout(seatCount);
                 m_SeatSystem.SetTableScale(scale);
             }

@@ -175,7 +175,7 @@ MonoBehaviour:
     seatDistanceOverride: 0.9925
   m_SeatDistance: 0.75
   m_SeatOffset: 0
-  m_LayoutConfig: {fileID: 0}
+  m_LayoutConfig: {fileID: 11400000, guid: ffc88c379a966c14bb2f0adb5635817c, type: 2}
 --- !u!1 &5717723542927975939
 GameObject:
   m_ObjectHideFlags: 0

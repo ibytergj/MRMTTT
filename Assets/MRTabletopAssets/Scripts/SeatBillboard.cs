@@ -15,6 +15,16 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         void Awake()
         {
+            CacheBasePositions();
+        }
+
+        // Awake may not have run yet when the first seat-changed event
+        // arrives (this object can start inactive), so callers lazy-init.
+        void CacheBasePositions()
+        {
+            if (m_BaseLocalPositions != null)
+                return;
+
             m_BaseLocalPositions = new Vector3[transform.childCount];
             for (int i = 0; i < m_BaseLocalPositions.Length; i++)
                 m_BaseLocalPositions[i] = transform.GetChild(i).localPosition;
@@ -55,6 +65,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         void ApplyTableScale()
         {
+            CacheBasePositions();
             float scale = m_SeatSystem != null ? m_SeatSystem.tableScale : 1f;
             int count = Mathf.Min(transform.childCount, m_BaseLocalPositions.Length);
             for (int i = 0; i < count; i++)
