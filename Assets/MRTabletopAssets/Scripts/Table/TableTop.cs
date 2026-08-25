@@ -22,6 +22,16 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             set => m_SeatOffset = value;
         }
 
+        [SerializeField]
+        TableLayoutConfig m_LayoutConfig;
+        public TableLayoutConfig layoutConfig => m_LayoutConfig;
+
+        /// <summary>Raised after <see cref="SetSeatLayout"/> applies a layout, with the new seat count.</summary>
+        public event Action<int> seatLayoutChanged;
+
+        /// <summary>The seat count of the last applied layout.</summary>
+        public int currentSeatCount { get; private set; } = 4;
+
         public Transform GetSeat(int seatIdx)
         {
             if (seatIdx <= -1)
@@ -30,140 +40,59 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             return m_Seats[seatIdx].seatTransform;
         }
 
-        // NOTE: The template's OnValidate() auto seat placement has been intentionally removed.
-        // Seat transforms (position/rotation) are authored manually in the scene/Inspector.
-
-#if UNITY_EDITOR
-        [ContextMenu("Test 8 Player Positioning")]
-        public void TestEightPlayerPositioning()
-        {
-            UpdateSeatPositions(8);
-            Debug.Log("Positioned seats for 8 players");
-        }
-
-        [ContextMenu("Test 4 Player Positioning")]
-        public void TestFourPlayerPositioning()
-        {
-            UpdateSeatPositions(4);
-            Debug.Log("Positioned seats for 4 players");
-        }
-#endif
-
         /// <summary>
-        /// Updates the seat visibility (active/inactive) based on the number of active players.
-        /// Seat transforms (position/rotation) are NOT modified - they should be set manually in the Inspector.
+        /// Applies the layout for <paramref name="seatCount"/> seats: seat
+        /// yaws from the config (preset or regular polygon), positions derived
+        /// from yaw and distance, first <paramref name="seatCount"/> seats
+        /// active, rim shape sides updated. Absolute and idempotent.
         /// </summary>
-        /// <param name="playerCount">Number of active players (2-8)</param>
-        /// <param name="force8PlayerMode">Force 8-player mode (show all 8 seats) regardless of player count</param>
-        public void UpdateSeatPositions(int playerCount, bool force8PlayerMode = false)
+        public void SetSeatLayout(int seatCount)
         {
-            playerCount = Mathf.Clamp(playerCount, 2, 8);
+            float[] yaws = m_LayoutConfig != null ? m_LayoutConfig.YawsFor(seatCount) : RegularPolygonYaws(seatCount);
 
-            // Determine how many seats to activate
-            int seatsToActivate = force8PlayerMode ? 8 : playerCount;
-
-            // Activate/deactivate seats based on player count
-            // NOTE: Seat positions and rotations are NOT modified - they should be set in the Inspector
             for (int i = 0; i < m_Seats.Length; i++)
             {
-                bool isActive = i < seatsToActivate;
-                if (m_Seats[i].seatTransform != null && m_Seats[i].seatTransform.gameObject != null)
+                var seatTransform = m_Seats[i].seatTransform;
+                if (seatTransform == null)
+                    continue;
+
+                bool isActive = i < seatCount;
+                seatTransform.gameObject.SetActive(isActive);
+                if (isActive)
                 {
-                    m_Seats[i].seatTransform.gameObject.SetActive(isActive);
-                }
-                else
-                {
-                    Debug.LogWarning($"TableTop: UpdateSeatPositions - Seat {i} has null transform or gameObject!");
+                    float yaw = yaws[i];
+                    seatTransform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+                    seatTransform.localPosition = SeatGeometry.SeatLocalPosition(yaw, DistanceFor(m_Seats[i]));
                 }
             }
 
-            // Update the player count in shader components
-            UpdatePlayerCount(playerCount);
+            currentSeatCount = seatCount;
+
+            foreach (var updater in GetComponentsInChildren<VirtualSurfaceColorShaderUpdater>(true))
+                updater.UpdatePlayerCount(seatCount);
+
+            seatLayoutChanged?.Invoke(seatCount);
         }
 
-        /// <summary>
-        /// Maps physical seat index to logical player index.
-        /// For 4 or fewer players, maintains the current mapping.
-        /// For 5+ players, physical and logical indices are the same.
-        /// </summary>
-        public int GetLogicalPlayerIndex(int physicalSeatIndex, int totalActivePlayers)
+        float DistanceFor(TableSeat seat)
         {
-            if (totalActivePlayers <= 4)
-            {
-                // For 4 or fewer players, maintain the current mapping
-                // Current physical layout: 0->0°, 1->180°, 2->270°, 3->90°
-                // Logical clockwise order: 0, 3, 1, 2
-                switch (physicalSeatIndex)
-                {
-                    case 0: return 0;
-                    case 1: return 2;
-                    case 2: return 3;
-                    case 3: return 1;
-                    default: return physicalSeatIndex;
-                }
-            }
-            else
-            {
-                // For 5+ players, physical and logical indices are the same
-                return physicalSeatIndex;
-            }
+            return seat.seatDistanceOverride > 0f ? seat.seatDistanceOverride : m_SeatDistance;
         }
 
-        /// <summary>
-        /// Maps logical player index to physical seat index.
-        /// For 4 or fewer players, maintains the current mapping.
-        /// For 5+ players, physical and logical indices are the same.
-        /// </summary>
-        public int GetPhysicalSeatIndex(int logicalPlayerIndex, int totalActivePlayers)
+        static float[] RegularPolygonYaws(int seatCount)
         {
-            if (totalActivePlayers <= 4)
-            {
-                // For 4 or fewer players, maintain the current mapping
-                // Logical clockwise order: 0, 3, 1, 2
-                // Current physical layout: 0->0°, 1->180°, 2->270°, 3->90°
-                switch (logicalPlayerIndex)
-                {
-                    case 0: return 0;
-                    case 1: return 3;
-                    case 2: return 1;
-                    case 3: return 2;
-                    default: return logicalPlayerIndex;
-                }
-            }
-            else
-            {
-                // For 5+ players, physical and logical indices are the same
-                return logicalPlayerIndex;
-            }
+            var yaws = new float[seatCount];
+            for (int i = 0; i < seatCount; i++)
+                yaws[i] = i * 360f / seatCount;
+            return yaws;
         }
 
-        /// <summary>
-        /// Updates the player count in materials using the VirtualSurfaceColorShader.
-        /// </summary>
-        void UpdatePlayerCount(int playerCount)
+        void OnValidate()
         {
-            // Find VirtualSurfaceColorShaderUpdater components and update them
-            VirtualSurfaceColorShaderUpdater[] updaters = GetComponentsInChildren<VirtualSurfaceColorShaderUpdater>();
-            foreach (var updater in updaters)
+            foreach (TableSeat seat in m_Seats)
             {
-                // Update the player count (which updates shape sides)
-                updater.UpdatePlayerCount(playerCount);
-            }
-
-            // For backward compatibility, also update materials directly
-            Renderer[] renderers = GetComponentsInChildren<Renderer>();
-            foreach (var renderer in renderers)
-            {
-                foreach (var material in renderer.materials)
-                {
-                    if (material != null && material.shader != null &&
-                        (material.shader.name.Contains("VirtualSurfaceShader") ||
-                         material.shader.name.Contains("VirtualSurfaceColorShader")))
-                    {
-                        // Update the shape sides parameter
-                        material.SetInt("_ShapeSides", playerCount);
-                    }
-                }
+                if (seat.seatTransform != null)
+                    seat.seatTransform.localPosition = -seat.seatTransform.forward * DistanceFor(seat);
             }
         }
     }
@@ -173,5 +102,8 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
     {
         public Transform seatTransform;
         public int seatID;
+
+        [Tooltip("Seat distance from the table center. 0 = use the table's seat distance.")]
+        public float seatDistanceOverride;
     }
 }

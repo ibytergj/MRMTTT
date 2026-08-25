@@ -1,4 +1,3 @@
-using Unity.Netcode;
 using Unity.XR.CoreUtils;
 using UnityEngine.Events;
 
@@ -18,7 +17,11 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         UnityEvent<int> m_OnSeatChanged;
 
         [SerializeField]
-        NetworkTableTopManager m_NetworkTableTopManager;
+        [Tooltip("Roots scaled with the table layout: TableTop, Hover Visuals, PassthroughVolume.")]
+        Transform[] m_TableScaledRoots;
+
+        /// <summary>The uniform scale last applied to the table roots.</summary>
+        public float tableScale { get; private set; } = 1f;
 
         XROrigin m_XROrigin;
 
@@ -30,33 +33,10 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         void FindReferences()
         {
             m_XROrigin = FindAnyObjectByType<XROrigin>();
-
-            if (m_NetworkTableTopManager == null)
-            {
-                m_NetworkTableTopManager = FindAnyObjectByType<NetworkTableTopManager>();
-                if (m_NetworkTableTopManager == null)
-                {
-                    Debug.LogWarning("TableSeatSystem: FindReferences - Could not find NetworkTableTopManager!");
-                }
-            }
         }
 
         public void TeleportToSeat(int seatNum)
         {
-            // Validate TableTop reference
-            if (m_TableTop == null)
-            {
-                Debug.LogError($"TableSeatSystem: TeleportToSeat - TableTop reference is null! Cannot teleport to seat {seatNum}");
-                return;
-            }
-
-            // Validate seat number
-            if (seatNum >= 0 && seatNum >= m_TableTop.seats.Length)
-            {
-                Debug.LogError($"TableSeatSystem: TeleportToSeat - Invalid seat number {seatNum}! Max seat index is {m_TableTop.seats.Length - 1}");
-                return;
-            }
-
             // Check for spectator seat or initial seat
             if (TableTop.k_CurrentSeat < 0)
             {
@@ -69,122 +49,52 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             float currentAngle = GetRotationAngleBasedOnSeatNum(prevSeat);
             float newAngle = GetRotationAngleBasedOnSeatNum(seatNum);
             float rotationAmount = newAngle - currentAngle;
+            m_XROrigin.transform.RotateAround(transform.position, transform.up, rotationAmount);
+            m_OnSeatChanged.Invoke(seatNum);
 
-            if (m_XROrigin == null)
-            {
-                FindReferences();
-
-                if (m_XROrigin == null)
-                {
-                    Debug.LogError("TableSeatSystem: TeleportToSeat - Failed to find XROrigin! Cannot teleport player");
-                    return;
-                }
-            }
-
-            try
-            {
-                m_XROrigin.transform.RotateAround(transform.position, transform.up, rotationAmount);
-                m_OnSeatChanged.Invoke(seatNum);
-
-                transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"TableSeatSystem: TeleportToSeat - Exception during teleportation: {ex.Message}\n{ex.StackTrace}");
-            }
-        }
-
-        public float GetRotationAngleBasedOnSeatNum(int seatNum)
-        {
-            if (m_TableTop == null)
-            {
-                Debug.LogError("TableSeatSystem: GetRotationAngleBasedOnSeatNum - TableTop reference is null!");
-                return 0f;
-            }
-
-            // Handle spectator seat (-1) or invalid seat
-            if (seatNum < 0)
-            {
-                return 0f;
-            }
-
-            // Validate seat index
-            if (seatNum >= m_TableTop.seats.Length)
-            {
-                Debug.LogError($"TableSeatSystem: GetRotationAngleBasedOnSeatNum - Invalid seat number {seatNum}! Max seat index is {m_TableTop.seats.Length - 1}");
-                return 0f;
-            }
-
-            // Read the actual rotation from the seat transform set in the Inspector
-            Transform seatTransform = m_TableTop.seats[seatNum].seatTransform;
-            if (seatTransform == null)
-            {
-                Debug.LogError($"TableSeatSystem: GetRotationAngleBasedOnSeatNum - Seat {seatNum} has null transform!");
-                return 0f;
-            }
-
-            return seatTransform.localRotation.eulerAngles.y;
+            transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
 
         /// <summary>
-        /// Gets the seat count (4 or 8) based on the network-synchronized seat configuration.
-        /// This represents the table layout, NOT the actual number of players.
-        /// Falls back to counting active seat transforms if network data is unavailable.
+        /// Applies a uniform scale to the table roots, keeping the local
+        /// player's offset relative to their seat across the change, then
+        /// re-raises the seat-changed event so billboards re-place.
+        /// Absolute and idempotent.
         /// </summary>
-        int GetActivePlayerCount()
+        public void SetTableScale(float scale)
         {
-            // First try to get the network-synchronized seat count (4 or 8)
-            if (m_NetworkTableTopManager != null && NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            if (m_TableScaledRoots == null || Mathf.Approximately(tableScale, scale))
+                return;
+
+            var seat = m_TableTop.GetSeat(TableTop.k_CurrentSeat);
+            var seatBefore = seat.position;
+
+            foreach (var root in m_TableScaledRoots)
             {
-                // Access the seat count from NetworkTableTopManager (4 or 8 seats for table layout)
-                int networkSeatCount = m_NetworkTableTopManager.GetNetworkSynchronizedSeatCount();
-
-                if (networkSeatCount > 0)
-                {
-                    return networkSeatCount;
-                }
-
-                Debug.LogWarning($"TableSeatSystem: GetActivePlayerCount - Network seat count is invalid ({networkSeatCount}), falling back to local count");
+                if (root != null)
+                    root.localScale = Vector3.one * scale;
             }
 
-            // Fallback: Count active seats locally
-            int count = 0;
-            for (int i = 0; i < m_TableTop.seats.Length; i++)
-            {
-                var seat = m_TableTop.seats[i];
-                if (seat.seatTransform != null && seat.seatTransform.gameObject != null)
-                {
-                    if (seat.seatTransform.gameObject.activeSelf)
-                        count++;
-                }
-                else
-                {
-                    Debug.LogWarning($"TableSeatSystem: GetActivePlayerCount - Seat {i} has null transform or gameObject!");
-                }
-            }
+            tableScale = scale;
 
-            return Mathf.Max(2, count); // Ensure at least 2 players
+            if (m_XROrigin != null)
+                m_XROrigin.transform.position += seat.position - seatBefore;
+
+            m_OnSeatChanged.Invoke(TableTop.k_CurrentSeat);
+        }
+
+        float GetRotationAngleBasedOnSeatNum(int seatNum)
+        {
+            // Spectator seat (-1) faces the same way as seat 0.
+            if (seatNum < 0 || seatNum >= m_TableTop.seats.Length)
+                return 0f;
+
+            var seatTransform = m_TableTop.seats[seatNum].seatTransform;
+            return seatTransform != null ? seatTransform.localRotation.eulerAngles.y : 0f;
         }
 
         public void ResetSeatRotation()
         {
-            if (m_XROrigin == null)
-            {
-                FindReferences();
-                if (m_XROrigin == null)
-                {
-                    Debug.LogError("TableSeatSystem: ResetSeatRotation - Failed to find XROrigin!");
-                    return;
-                }
-            }
-
-            // Validate seat index (GetSeat handles -1 by returning seat 0)
-            if (TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
-            {
-                Debug.LogError($"TableSeatSystem: ResetSeatRotation - Invalid current seat: {TableTop.k_CurrentSeat}");
-                return;
-            }
-
             Vector3 headForward = new Vector3(m_XROrigin.transform.forward.x, 0, m_XROrigin.transform.forward.z);
             Vector3 seatForward = new Vector3(m_TableTop.GetSeat(TableTop.k_CurrentSeat).forward.x, 0, m_TableTop.GetSeat(TableTop.k_CurrentSeat).forward.z);
             float angle = Vector3.SignedAngle(headForward, seatForward, Vector3.up);
@@ -194,13 +104,6 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         public void ResetToSeatDefault()
         {
-            // Validate seat index (GetSeat handles -1 by returning seat 0)
-            if (TableTop.k_CurrentSeat >= m_TableTop.seats.Length)
-            {
-                Debug.LogError($"TableSeatSystem: ResetToSeatDefault - Invalid current seat: {TableTop.k_CurrentSeat}");
-                return;
-            }
-
             var seat = m_TableTop.GetSeat(TableTop.k_CurrentSeat);
 
             var seatPosition = seat.position;
@@ -208,14 +111,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             seatPosition.y -= m_DefaultSeatHeight;
 
             if (m_XROrigin == null)
-            {
                 FindReferences();
-                if (m_XROrigin == null)
-                {
-                    Debug.LogError("TableSeatSystem: ResetToSeatDefault - Failed to find XROrigin!");
-                    return;
-                }
-            }
 
             var targetPosition = seatPosition - seat.forward * m_TableTop.seatOffset;
             var targetRotation = seat.rotation;

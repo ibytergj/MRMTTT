@@ -235,10 +235,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         public void RemovePlayerFromSeat()
         {
             if (m_PlayerInSeat == null)
-            {
-                Debug.LogWarning("Trying to remove player from seat but no player is assigned to this seat.");
                 return;
-            }
 
             // Unregister player color from PlayerColorManager
             if (PlayerColorManager.Instance != null)

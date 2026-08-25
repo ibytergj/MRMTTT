@@ -55,14 +55,9 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         void UpdateAllSeats()
         {
-            int activePlayers = Mathf.Min(8, m_TableTopManager.networkedSeats.Count);
-
             for (int i = 0; i < m_TableTopManager.networkedSeats.Count; i++)
             {
-                // Get logical player index for UI display
-                int logicalIndex = m_TableTopManager.tableTop.GetLogicalPlayerIndex(i, activePlayers);
-
-                m_SeatImages[i].color = GetColorForSeat(logicalIndex, m_TableTopManager.networkedSeats[i].isOccupied);
+                m_SeatImages[i].color = GetColorForSeat(i, m_TableTopManager.networkedSeats[i].isOccupied);
                 m_SeatButtons[i].interactable = !m_TableTopManager.networkedSeats[i].isOccupied;
             }
         }
