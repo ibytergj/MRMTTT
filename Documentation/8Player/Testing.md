@@ -35,6 +35,11 @@ builds.
 > 3 virtual players join, one does not). Same workaround. Note MPPM
 > intentionally syncs Play Mode across all players, so re-entering play
 > restarts every player.
+>
+> History: these races are a **V2 regression**. Template V2 rewrote the
+> authentication/MPPM path (command-line parsing instead of the MPPM
+> tags API, auth wrapped in a failure-swallowing try/catch); V1 did not
+> exhibit this under heavy multi-player restart testing.
 
 ### Windows build players (5–8)
 
