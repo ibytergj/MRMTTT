@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -23,12 +24,35 @@ namespace XRMultiplayer
             XRINetworkGameManager.LocalPlayerColor.Subscribe(SetPlayerColor);
             SetPlayerColor(XRINetworkGameManager.LocalPlayerColor.Value);
             SetPlayerName(XRINetworkGameManager.LocalPlayerName.Value);
+
+            // Highlight the current name when the field is focused so the
+            // first key press replaces it; an arrow key keeps it.
+            m_PlayerNameInputField.onFocusSelectAll = true;
+            m_PlayerNameInputField.onSelect.AddListener(OnNameFieldSelected);
         }
 
         void OnDisable()
         {
             XRINetworkGameManager.LocalPlayerName.Unsubscribe(SetPlayerName);
             XRINetworkGameManager.LocalPlayerColor.Unsubscribe(SetPlayerColor);
+            m_PlayerNameInputField.onSelect.RemoveListener(OnNameFieldSelected);
+        }
+
+        void OnNameFieldSelected(string _)
+        {
+            // TMP resets the caret while activating the field, so the
+            // selection has to be applied one frame later.
+            StartCoroutine(SelectAllDeferred());
+        }
+
+        IEnumerator SelectAllDeferred()
+        {
+            yield return null;
+            if (m_PlayerNameInputField.isFocused)
+            {
+                m_PlayerNameInputField.selectionStringAnchorPosition = 0;
+                m_PlayerNameInputField.selectionStringFocusPosition = m_PlayerNameInputField.text.Length;
+            }
         }
 
         /// <summary>
