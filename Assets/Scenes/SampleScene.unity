@@ -537,6 +537,12 @@ MonoBehaviour:
   m_UnityEvent:
     m_PersistentCalls:
       m_Calls: []
+--- !u!4 &456343659 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 304514169475511775, guid: 029ae867cb93321478e699e82b60936a,
+    type: 3}
+  m_PrefabInstance: {fileID: 8421521763229724301}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &636736289
 GameObject:
   m_ObjectHideFlags: 0
@@ -610,39 +616,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2385442581696845898}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &883935887 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3841005752082201598, guid: 029ae867cb93321478e699e82b60936a,
-    type: 3}
-  m_PrefabInstance: {fileID: 8421521763229724301}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &883935888 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5022274084850889814, guid: 029ae867cb93321478e699e82b60936a,
-    type: 3}
-  m_PrefabInstance: {fileID: 8421521763229724301}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &883935889 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2088799073100196541, guid: 029ae867cb93321478e699e82b60936a,
-    type: 3}
-  m_PrefabInstance: {fileID: 8421521763229724301}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &883935890 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 266666184600328456, guid: 029ae867cb93321478e699e82b60936a,
-    type: 3}
-  m_PrefabInstance: {fileID: 8421521763229724301}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &883935891 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4064586080943586722, guid: 029ae867cb93321478e699e82b60936a,
-    type: 3}
-  m_PrefabInstance: {fileID: 8421521763229724301}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &883935892 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7383272232189528201, guid: 029ae867cb93321478e699e82b60936a,
     type: 3}
   m_PrefabInstance: {fileID: 8421521763229724301}
   m_PrefabAsset: {fileID: 0}
@@ -1811,6 +1787,7 @@ MonoBehaviour:
       MaxSecondsBetweenUpdates: 0
   m_SeatSystem: {fileID: 8421521763229724304}
   m_TableTop: {fileID: 1301683159}
+  m_Config: {fileID: 11400000, guid: dda8530e039df2f498425efb2ba56204, type: 2}
   m_PlayerRepositionManager: {fileID: 8421521763229724308}
   m_SeatButtons:
   - {fileID: 1466689190}
@@ -3958,12 +3935,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3030828fa1c00a64594136b7c480267f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!224 &981317231541604508 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4651686458507613566, guid: 3c7e97c2ac5aede4c834e98354f624e2,
-    type: 3}
-  m_PrefabInstance: {fileID: 981317231541604500}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2385442581696845898
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4472,6 +4443,16 @@ PrefabInstance:
       objectReference: {fileID: 1726175059}
     - target: {fileID: 6542949831504449490, guid: 029ae867cb93321478e699e82b60936a,
         type: 3}
+      propertyPath: m_TableScaledRoots.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6542949831504449490, guid: 029ae867cb93321478e699e82b60936a,
+        type: 3}
+      propertyPath: 'm_TableScaledRoots.Array.data[2]'
+      value: 
+      objectReference: {fileID: 456343659}
+    - target: {fileID: 6542949831504449490, guid: 029ae867cb93321478e699e82b60936a,
+        type: 3}
       propertyPath: m_OnSeatChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 2023478223}
@@ -4567,14 +4548,6 @@ MonoBehaviour:
   m_FadeDuration: 0.5
   m_ApertureSize: 0
   m_FeatheringEffect: 0.1
-  m_TableTop: {fileID: 883935892}
-  m_HoverVisuals: {fileID: 883935891}
-  m_PassthroughVolume: {fileID: 883935890}
-  m_TableUI: {fileID: 981317231541604508}
-  m_TableManipulatorRotation: {fileID: 883935889}
-  m_TableManipulatorFreeMove: {fileID: 883935888}
-  m_HandleVisual: {fileID: 883935887}
-  m_NetworkTableTopManager: {fileID: 1726175059}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
