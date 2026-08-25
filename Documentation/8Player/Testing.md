@@ -13,6 +13,22 @@ behavior these checks verify.
   listeners so one click toggles an even number of times), and/or the
   `squelched` bindable round-trip in `XRINetworkPlayer.ToggleSquelch`.
   Deliberately parked mid-test-session; diagnose before fixing.
+- **Corner seat cards (5-8) do not respond to clicks** (2026-08-25,
+  5-player session): the server path is healthy (invoking
+  `RequestSeat(5)` directly seats the player instantly), so the failure
+  is in the hand-added `-SeatButton 5..8` cards' hover/raycast wiring —
+  the join sub-button likely never activates because the cloned cards
+  miss hover event wiring. The planned Phase 4 `SeatButtonSpawner`
+  (spawning real template buttons instead of hand clones) is the fix.
+- **Action bar clips through the doubled table** (2026-08-25): the
+  billboard scales its x/z offsets with the table but not y, and the
+  x2 table is taller, so at many camera heights the bar renders under
+  or intersecting the tabletop; players must lean far out to see it.
+  Needs a design decision (raise bar with table height vs reposition).
+- **Runtime logging is very sparse after the noise cleanup**: silent
+  no-ops are hard to diagnose during validation. Consider an optional
+  verbose-validation logging toggle rather than restoring blanket
+  Debug.Log noise.
 
 ## Test rig: 8 simultaneous players
 
