@@ -3,6 +3,17 @@
 How to validate the 8-player layer. [Design.md](Design.md) describes the
 behavior these checks verify.
 
+## Open findings (observed during validation, not yet fixed)
+
+- **Squelch does not untoggle** (2026-08-25, 4-player MPPM session):
+  clicking the microphone on another player's seat card squelches them,
+  but clicking it again does not unsquelch — the local mute sticks.
+  Suspect area: `TableTopSeatButton` re-adds the mute button's onClick
+  listener on every `AssignPlayerToSeat` (seat swaps/rejoins may stack
+  listeners so one click toggles an even number of times), and/or the
+  `squelched` bindable round-trip in `XRINetworkPlayer.ToggleSquelch`.
+  Deliberately parked mid-test-session; diagnose before fixing.
+
 ## Test rig: 8 simultaneous players
 
 Validated recipe (2026-08-21): 4 MPPM editor players + 4 windowed Windows
