@@ -15,6 +15,17 @@ builds.
    `Player2`–`Player4`; the main editor is Player 1).
 3. Enter Play mode; each editor player hosts/joins through the lobby UI.
 
+> **Known template quirk (not fixed by design):** a virtual player that
+> enters Play Mode in its first seconds after booting can lose a race
+> against the editor's Unity Cloud binding: `XRINetworkGameManager.Awake`
+> checks `CloudProjectSettings.projectBound` once, logs "Project has not
+> been linked to Unity Cloud", and permanently skips authentication —
+> the lobby list then stays silently empty on that player. This is
+> pristine-template behavior (same code in ReferenceV2). Workaround:
+> let freshly launched virtual players sit for a few seconds before
+> entering Play Mode, or exit and re-enter Play Mode — on re-entry the
+> binding is ready and the join list populates normally.
+
 ### Windows build players (5–8)
 
 1. Build a Windows standalone. The build must include the XR Interaction
