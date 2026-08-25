@@ -108,6 +108,21 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             set => m_ClearTextOnSubmit = value;
         }
 
+        [SerializeField, Tooltip("If true, the keyboard opens with the field's current text behaving as fully selected: the first character replaces it, backspace clears it.")]
+        bool m_SelectAllOnOpen;
+
+        /// <summary>
+        /// If true, the keyboard opens with the field's current text behaving
+        /// as fully selected: the first character replaces it, backspace
+        /// clears it. Mirrors <see cref="TMP_InputField.onFocusSelectAll"/>
+        /// for the spatial keyboard.
+        /// </summary>
+        public bool selectAllOnOpen
+        {
+            get => m_SelectAllOnOpen;
+            set => m_SelectAllOnOpen = value;
+        }
+
         [SerializeField, Tooltip("If true, this display will clear the input field text when the keyboard opens.")]
         public bool m_ClearTextOnOpen;
 
@@ -307,6 +322,16 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                 if (!m_UseSceneKeyboard || m_Keyboard == null)
                     GlobalNonNativeKeyboard.instance.RepositionKeyboardIfOutOfView();
 
+                // The keyboard buffer can go stale when the field text was
+                // changed externally while the keyboard stayed open (e.g. the
+                // field was cleared); resync so the next key press doesn't
+                // resurrect the old text.
+                if (m_ActiveKeyboard.text != m_InputField.text)
+                    m_ActiveKeyboard.SyncText(m_InputField.text);
+
+                if (m_SelectAllOnOpen)
+                    m_ActiveKeyboard.selectAllPending = true;
+
                 // Sync input field caret position with keyboard caret position
                 if (m_InputField.stringPosition != m_ActiveKeyboard.caretPosition)
                     m_InputField.stringPosition = m_ActiveKeyboard.caretPosition;
@@ -326,6 +351,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             {
                 m_ActiveKeyboard.Open(m_InputField, m_MonitorInputFieldCharacterLimit);
             }
+
+            if (m_SelectAllOnOpen)
+                m_ActiveKeyboard.selectAllPending = true;
 
             // Sync input field caret position with keyboard caret position
             if (m_InputField.stringPosition != m_ActiveKeyboard.caretPosition)

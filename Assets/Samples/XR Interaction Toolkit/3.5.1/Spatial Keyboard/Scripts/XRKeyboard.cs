@@ -69,6 +69,31 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         [SerializeField, HideInInspector]
         string m_Text = string.Empty;
 
+        bool m_SelectAllPending;
+
+        /// <summary>
+        /// When true, the keyboard text behaves as if fully selected: the next
+        /// character insert replaces the whole text, backspace or delete clear
+        /// it. Cleared by the first key press. Lets a pre-filled value (like a
+        /// default player name) be replaced by simply typing over it.
+        /// </summary>
+        public bool selectAllPending
+        {
+            get => m_SelectAllPending;
+            set => m_SelectAllPending = value;
+        }
+
+        /// <summary>
+        /// Replaces the keyboard text and moves the caret to the end without
+        /// re-opening the keyboard. Used by displays to resync a stale buffer
+        /// with their input field.
+        /// </summary>
+        public void SyncText(string newText)
+        {
+            text = newText ?? string.Empty;
+            caretPosition = text.Length;
+        }
+
         /// <summary>
         /// String of text currently in the keyboard. Setter invokes <see cref="onTextUpdated"/> when updated.
         /// </summary>
@@ -503,6 +528,15 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// the text does not exceed the <see cref="TMP_InputField.characterLimit"/>.</remarks>
         public virtual void UpdateText(string newText)
         {
+            // A pending select-all is consumed by the first insert: the new
+            // text replaces everything.
+            if (m_SelectAllPending)
+            {
+                m_SelectAllPending = false;
+                text = string.Empty;
+                caretPosition = 0;
+            }
+
             // Attempt to add key press to current text
             var updatedText = text;
 
@@ -557,6 +591,14 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// </summary>
         public virtual void Backspace()
         {
+            // Backspace on a pending select-all deletes the whole selection.
+            if (m_SelectAllPending)
+            {
+                m_SelectAllPending = false;
+                Clear();
+                return;
+            }
+
             if (caretPosition > 0)
             {
                 --caretPosition;
@@ -569,6 +611,14 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// </summary>
         public virtual void Delete()
         {
+            // Delete on a pending select-all deletes the whole selection.
+            if (m_SelectAllPending)
+            {
+                m_SelectAllPending = false;
+                Clear();
+                return;
+            }
+
             if (caretPosition < text.Length)
             {
                 text = text.Remove(caretPosition, 1);
