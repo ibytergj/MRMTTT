@@ -640,30 +640,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6bc83875956e3a49afba8ac64e9ac19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.VirtualSurfaceColorShaderUpdater
-  m_ShaderName: VirtualSurfaceColorShader
-  m_PlayerColorPropertyNames:
-  - _PlayerColor1
-  - _PlayerColor2
-  - _PlayerColor3
-  - _PlayerColor4
-  - _PlayerColor5
-  - _PlayerColor6
-  - _PlayerColor7
-  - _PlayerColor8
-  m_ActivePlayerIndexProperty: _ActivePlayerIndex
-  m_ActivePlayerGlowColorProperty: _ActivePlayerGlowColor
-  m_ActivePlayerGlowIntensityProperty: _ActivePlayerGlowIntensity
-  m_EffectAnimationParameterProperty: _EffectAnimationParameter
-  m_ShapeSidesProperty: _ShapeSides
-  m_HighlightModeProperty: _HighlightMode
-  m_PatternIntensityProperty: _PatternIntensity
-  m_AnimationSpeedProperty: _AnimationSpeed
-  m_BrightnessPulseIntensityProperty: _BrightnessPulseIntensity
-  m_UsePlayerColorManagerSettings: 1
-  m_GlowColor: {r: 1, g: 1, b: 1, a: 1}
-  m_GlowIntensity: 0.3
-  m_EnablePulse: 1
-  m_PulseSpeed: 1
 --- !u!114 &926221177 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3900589965684633313, guid: 3c7e97c2ac5aede4c834e98354f624e2,
@@ -776,6 +752,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1178159487}
   - component: {fileID: 1178159488}
+  - component: {fileID: 1178159489}
   m_Layer: 0
   m_Name: PlayerColorManager
   m_TagString: Untagged
@@ -811,25 +788,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.PlayerColorManager
   ShowTopMostFoldoutHeaderGroup: 1
-  m_PlayerColors:
-  - {r: 1, g: 0, b: 0.5009947, a: 1}
-  - {r: 1, g: 0.5019608, b: 0, a: 1}
-  - {r: 1, g: 1, b: 0, a: 1}
-  - {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0, g: 0.7176471, b: 0, a: 1}
-  - {r: 0, g: 0, b: 0, a: 1}
-  - {r: 0.70440245, g: 0.67117584, b: 0.67117584, a: 1}
-  m_ActivePlayerIndex: -1
-  m_ActivePlayerGlowColor: {r: 1, g: 1, b: 1, a: 1}
-  m_ActivePlayerGlowIntensity: 0.3
-  m_ActivePlayerPulseSpeed: 1
-  m_EnablePulseAnimation: 1
+  m_Palette: {fileID: 11400000, guid: 7758335b2925cb74ab3de40044fbf590, type: 2}
+  m_GlowIntensity: 0.3
+  m_EnablePulse: 1
   m_HighlightMode: 3
-  m_UseColorBlindFriendlyContrast: 0
   m_PatternIntensity: 0.5
   m_AnimationSpeed: 1
   m_BrightnessPulseIntensity: 0.3
+--- !u!114 &1178159489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1178159486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1051730724
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!114 &1216290813 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6896597489476594292, guid: 3c7e97c2ac5aede4c834e98354f624e2,

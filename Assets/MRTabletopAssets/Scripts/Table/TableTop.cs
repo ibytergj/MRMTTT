@@ -68,7 +68,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
             currentSeatCount = seatCount;
 
-            foreach (var updater in GetComponentsInChildren<VirtualSurfaceColorShaderUpdater>(true))
+            foreach (var updater in GetComponentsInChildren<SeatColorRimUpdater>(true))
                 updater.UpdatePlayerCount(seatCount);
 
             seatLayoutChanged?.Invoke(seatCount);

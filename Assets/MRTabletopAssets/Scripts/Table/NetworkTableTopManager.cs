@@ -315,12 +315,22 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             UpdateNetworkedSeatsVisuals();
             ServerUpdateSeatLayout();
 
+            // The active (highlighted) seat starts as the host's seat; games
+            // move it later via PlayerColorManager.SetActiveSeat.
+            if (newSeatID >= 0 && localPlayerID == NetworkManager.ServerClientId
+                && PlayerColorManager.Instance != null && PlayerColorManager.Instance.ActiveSeat < 0)
+            {
+                PlayerColorManager.Instance.SetActiveSeat(newSeatID);
+            }
+
             AssignSeatRpc(newSeatID, localPlayerID);
         }
 
         void ServerRemoveSeat(int seatID)
         {
             networkedSeats[seatID] = new NetworkedSeat { isOccupied = false, playerID = 0 };
+            if (PlayerColorManager.Instance != null)
+                PlayerColorManager.Instance.CancelRequestsForSeat(seatID);
             UpdateNetworkedSeatsVisuals();
             RemovePlayerFromSeatRpc(seatID);
         }

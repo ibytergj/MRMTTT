@@ -184,9 +184,9 @@ public static class EightPlayerSceneMigration
         }
         Debug.Log(k_Log + "PlayerRepositionManager added and wired");
 
-        // 5. VirtualSurfaceColorShaderUpdater on TableTop/Plane.
-        var vscsu = planeT.GetComponent<VirtualSurfaceColorShaderUpdater>();
-        if (vscsu == null) vscsu = planeT.gameObject.AddComponent<VirtualSurfaceColorShaderUpdater>();
+        // 5. SeatColorRimUpdater (formerly VirtualSurfaceColorShaderUpdater) on TableTop/Plane.
+        var vscsu = planeT.GetComponent<SeatColorRimUpdater>();
+        if (vscsu == null) vscsu = planeT.gameObject.AddComponent<SeatColorRimUpdater>();
         {
             var so = new SerializedObject(vscsu);
             SetIfPresent(so, "m_UsePlayerColorManagerSettings", p => p.boolValue = true);

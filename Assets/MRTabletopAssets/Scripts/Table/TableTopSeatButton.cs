@@ -194,38 +194,13 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
                 m_HideAvatarToggle.SetIsOnWithoutNotify(!playerColocation.isShowingAvatar);
             }
 
-            // Handle player color assignment with PlayerColorManager
-            if (PlayerColorManager.Instance != null)
+            // Player color == seat color: the template seam, fed by the
+            // networked palette when available.
+            if (m_PlayerInSeat.IsLocalPlayer)
             {
-                // Check if this is a seat swap
-                bool isSeatSwap = PlayerColorManager.Instance.HasRegisteredColor(player.OwnerClientId);
-
-                if (isSeatSwap)
-                {
-                    // For seat swaps, maintain the player's existing color
-                    PlayerColorManager.Instance.UpdatePlayerSeat(player.OwnerClientId, m_SeatID);
-                }
-                else
-                {
-                    // For new players, try to use their preferred color
-                    Color preferredColor = player.playerColor;
-                    Color assignedColor = PlayerColorManager.Instance.RegisterPlayerColor(
-                        player.OwnerClientId, preferredColor, m_SeatID);
-
-                    // Update the local player color
-                    if (player.IsLocalPlayer)
-                    {
-                        XRINetworkGameManager.LocalPlayerColor.Value = assignedColor;
-                    }
-                }
-            }
-            else
-            {
-                // Fallback to old behavior if PlayerColorManager is not available
-                if (m_PlayerInSeat.IsLocalPlayer)
-                {
-                    XRINetworkGameManager.LocalPlayerColor.Value = m_SeatColors[m_SeatID];
-                }
+                XRINetworkGameManager.LocalPlayerColor.Value = PlayerColorManager.Instance != null
+                    ? PlayerColorManager.Instance.GetPlayerColor(m_SeatID)
+                    : m_SeatColors[m_SeatID];
             }
 
             SetLocalPlayer(m_PlayerInSeat.IsLocalPlayer, false);
@@ -236,12 +211,6 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         {
             if (m_PlayerInSeat == null)
                 return;
-
-            // Unregister player color from PlayerColorManager
-            if (PlayerColorManager.Instance != null)
-            {
-                PlayerColorManager.Instance.UnregisterPlayerColor(m_PlayerInSeat.OwnerClientId);
-            }
 
             m_PlayerInSeat.onNameUpdated -= SetPlayerName;
             m_PlayerInSeat.selfMuted.OnValueChanged -= UpdateSelfMutedState;

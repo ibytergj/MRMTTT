@@ -31,6 +31,9 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         [Tooltip("Default color per seat index. Normalized to 8 opaque entries.")]
         Color[] m_Colors = (Color[])k_FallbackColors.Clone();
 
+        /// <summary>The built-in default colors, for consumers without a palette asset.</summary>
+        public static Color[] FallbackColors() => (Color[])k_FallbackColors.Clone();
+
         /// <summary>The seat's default color (normalized: opaque, fallback-filled).</summary>
         public Color GetColor(int seatIndex)
         {
