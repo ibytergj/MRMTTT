@@ -24,10 +24,20 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         public float tableScale { get; private set; } = 1f;
 
         XROrigin m_XROrigin;
+        Vector3[] m_BaseRootScales;
 
         void Awake()
         {
             FindReferences();
+
+            // The factor multiplies each root's authored scale (e.g. the
+            // PassthroughVolume is authored at 0.4, not 1).
+            if (m_TableScaledRoots != null)
+            {
+                m_BaseRootScales = new Vector3[m_TableScaledRoots.Length];
+                for (int i = 0; i < m_TableScaledRoots.Length; i++)
+                    m_BaseRootScales[i] = m_TableScaledRoots[i] != null ? m_TableScaledRoots[i].localScale : Vector3.one;
+            }
         }
 
         void FindReferences()
@@ -63,16 +73,16 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         /// </summary>
         public void SetTableScale(float scale)
         {
-            if (m_TableScaledRoots == null || Mathf.Approximately(tableScale, scale))
+            if (m_TableScaledRoots == null || m_BaseRootScales == null || Mathf.Approximately(tableScale, scale))
                 return;
 
             var seat = m_TableTop.GetSeat(TableTop.k_CurrentSeat);
             var seatBefore = seat.position;
 
-            foreach (var root in m_TableScaledRoots)
+            for (int i = 0; i < m_TableScaledRoots.Length; i++)
             {
-                if (root != null)
-                    root.localScale = Vector3.one * scale;
+                if (m_TableScaledRoots[i] != null)
+                    m_TableScaledRoots[i].localScale = m_BaseRootScales[i] * scale;
             }
 
             tableScale = scale;
