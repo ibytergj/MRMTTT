@@ -465,6 +465,10 @@ namespace XRMultiplayer
             {
                 m_VivoxParticipant.ParticipantAudioEnergyChanged += ParticipantAudioEnergyChanged;
                 m_PlayerNameTag.PlayerConnectedToVoice();
+
+                // A re-fetched participant starts unmuted; re-apply the local
+                // squelch so the icon and the audio never disagree.
+                ApplySquelchState();
             }
             else
             {
@@ -497,14 +501,23 @@ namespace XRMultiplayer
         /// </summary>
         public void ToggleSquelch()
         {
-            if (m_VivoxParticipant != null)
-            {
-                squelched.Value = !squelched.Value;
-                if (squelched.Value)
-                    m_VivoxParticipant.MutePlayerLocally();
-                else
-                    m_VivoxParticipant.UnmutePlayerLocally();
-            }
+            // The squelched state is the source of truth; the Vivox
+            // participant follows it. The participant reference can be null
+            // or replaced between clicks (voice channel events re-fetch it),
+            // so the toggle must not depend on it.
+            squelched.Value = !squelched.Value;
+            ApplySquelchState();
+        }
+
+        void ApplySquelchState()
+        {
+            if (m_VivoxParticipant == null)
+                return;
+
+            if (squelched.Value)
+                m_VivoxParticipant.MutePlayerLocally();
+            else
+                m_VivoxParticipant.UnmutePlayerLocally();
         }
     }
 }

@@ -595,11 +595,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4097516423306178641}
   m_SourcePrefab: {fileID: 100100000, guid: 1c41093990f8cd34599d812a47f6b344, type: 3}
+--- !u!1 &3516136562597969477 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 2730462937807542934}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4097516423306178641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3516136562597969477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366824566751e3d40bb00683b641d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.SeatHoverVisual
+  m_SeatIndex: 1
+  m_SeatDistanceRatio: 0.9333
+  m_Renderer: {fileID: 6198811957021933952}
 --- !u!4 &4012691368672775981 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1318283764621055419, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 2730462937807542934}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &6198811957021933952 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8350262165296372502, guid: 1c41093990f8cd34599d812a47f6b344,
     type: 3}
   m_PrefabInstance: {fileID: 2730462937807542934}
   m_PrefabAsset: {fileID: 0}
@@ -1051,11 +1082,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3761154203773823578}
   m_SourcePrefab: {fileID: 100100000, guid: 1c41093990f8cd34599d812a47f6b344, type: 3}
 --- !u!4 &4262095160420133831 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1318283764621055419, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 2985179493631000188}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4342071399283595951 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 2985179493631000188}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3761154203773823578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4342071399283595951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366824566751e3d40bb00683b641d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.SeatHoverVisual
+  m_SeatIndex: 0
+  m_SeatDistanceRatio: 0.9333
+  m_Renderer: {fileID: 6525552979657368938}
+--- !u!23 &6525552979657368938 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8350262165296372502, guid: 1c41093990f8cd34599d812a47f6b344,
     type: 3}
   m_PrefabInstance: {fileID: 2985179493631000188}
   m_PrefabAsset: {fileID: 0}
@@ -1135,11 +1197,42 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2163124548867455729}
   m_SourcePrefab: {fileID: 100100000, guid: 1c41093990f8cd34599d812a47f6b344, type: 3}
 --- !u!4 &2351192011898172700 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1318283764621055419, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 3668851173001666727}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2865765682174444660 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 3668851173001666727}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2163124548867455729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2865765682174444660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366824566751e3d40bb00683b641d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.SeatHoverVisual
+  m_SeatIndex: 2
+  m_SeatDistanceRatio: 0.9333
+  m_Renderer: {fileID: 4686126832025992113}
+--- !u!23 &4686126832025992113 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8350262165296372502, guid: 1c41093990f8cd34599d812a47f6b344,
     type: 3}
   m_PrefabInstance: {fileID: 3668851173001666727}
   m_PrefabAsset: {fileID: 0}
@@ -1773,14 +1866,45 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6219420040206798835}
   m_SourcePrefab: {fileID: 100100000, guid: 1c41093990f8cd34599d812a47f6b344, type: 3}
+--- !u!23 &2918138390647530134 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8350262165296372502, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 6601529752436488576}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5320479919480843323 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1318283764621055419, guid: 1c41093990f8cd34599d812a47f6b344,
     type: 3}
   m_PrefabInstance: {fileID: 6601529752436488576}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5670601843478060371 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1526542153919587539, guid: 1c41093990f8cd34599d812a47f6b344,
+    type: 3}
+  m_PrefabInstance: {fileID: 6601529752436488576}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6219420040206798835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5670601843478060371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366824566751e3d40bb00683b641d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.SeatHoverVisual
+  m_SeatIndex: 3
+  m_SeatDistanceRatio: 0.9333
+  m_Renderer: {fileID: 2918138390647530134}
 --- !u!1001 &7208396136329289388
 PrefabInstance:
   m_ObjectHideFlags: 0

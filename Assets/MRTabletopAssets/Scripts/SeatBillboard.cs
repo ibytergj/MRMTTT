@@ -2,44 +2,67 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
     /// Places a world-space UI root (Navigation Menu, table manipulation
-    /// handles) at the local player's seat: yaw read from the seat transform,
-    /// child offsets scaled with the table so the UI keeps its distance from
-    /// the table edge across layout changes.
+    /// handles) at the local player's seat. The authored transform is treated
+    /// as the seat-0 pose: on every seat change it is rotated around the
+    /// table center to the seat's yaw and its planar offset is scaled with
+    /// the table, so the UI keeps its authored relationship to the table edge
+    /// at any seat and any table size. Child offsets are scaled the same way
+    /// for roots that sit at the center and carry their radius in children
+    /// (the manipulation handles).
     /// </summary>
     public class SeatBillboard : MonoBehaviour
     {
         TableTop m_TableTop;
         TableSeatSystem m_SeatSystem;
-        Vector3[] m_BaseLocalPositions;
+        Vector3 m_BaseLocalPosition;
+        Vector3[] m_BaseChildLocalPositions;
+        bool m_BaseCached;
         bool m_ReferencesSearched;
 
         void Awake()
         {
-            CacheBasePositions();
+            CacheBasePose();
         }
 
         // Awake may not have run yet when the first seat-changed event
         // arrives (this object can start inactive), so callers lazy-init.
-        void CacheBasePositions()
+        void CacheBasePose()
         {
-            if (m_BaseLocalPositions != null)
+            if (m_BaseCached)
                 return;
 
-            m_BaseLocalPositions = new Vector3[transform.childCount];
-            for (int i = 0; i < m_BaseLocalPositions.Length; i++)
-                m_BaseLocalPositions[i] = transform.GetChild(i).localPosition;
+            m_BaseCached = true;
+            m_BaseLocalPosition = transform.localPosition;
+            m_BaseChildLocalPositions = new Vector3[transform.childCount];
+            for (int i = 0; i < m_BaseChildLocalPositions.Length; i++)
+                m_BaseChildLocalPositions[i] = transform.GetChild(i).localPosition;
         }
 
         public void RotateBillboard(int seatID)
         {
-            transform.localRotation = Quaternion.Euler(0, SeatIDToAngle(seatID), 0);
-            ApplyTableScale();
+            CacheBasePose();
+            FindReferences();
+
+            float yaw = SeatIDToAngle(seatID);
+            float scale = m_SeatSystem != null ? m_SeatSystem.tableScale : 1f;
+            var seatRotation = Quaternion.Euler(0f, yaw, 0f);
+
+            transform.localRotation = seatRotation;
+            transform.localPosition = seatRotation * new Vector3(
+                m_BaseLocalPosition.x * scale,
+                m_BaseLocalPosition.y,
+                m_BaseLocalPosition.z * scale);
+
+            int count = Mathf.Min(transform.childCount, m_BaseChildLocalPositions.Length);
+            for (int i = 0; i < count; i++)
+            {
+                var basePosition = m_BaseChildLocalPositions[i];
+                transform.GetChild(i).localPosition = new Vector3(basePosition.x * scale, basePosition.y, basePosition.z * scale);
+            }
         }
 
         float SeatIDToAngle(int seatID)
         {
-            FindReferences();
-
             if (m_TableTop != null && seatID >= 0 && seatID < m_TableTop.seats.Length)
             {
                 var seatTransform = m_TableTop.seats[seatID].seatTransform;
@@ -60,18 +83,6 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
                     return 90;
                 default:
                     return 0;
-            }
-        }
-
-        void ApplyTableScale()
-        {
-            CacheBasePositions();
-            float scale = m_SeatSystem != null ? m_SeatSystem.tableScale : 1f;
-            int count = Mathf.Min(transform.childCount, m_BaseLocalPositions.Length);
-            for (int i = 0; i < count; i++)
-            {
-                var basePosition = m_BaseLocalPositions[i];
-                transform.GetChild(i).localPosition = new Vector3(basePosition.x * scale, basePosition.y, basePosition.z * scale);
             }
         }
 
