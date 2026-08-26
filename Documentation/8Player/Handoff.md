@@ -27,12 +27,16 @@ Fix procedure (indisputable path):
    "0 compile errors" as "up to date".
 
 Standing rules learned the hard way:
+- **User rule (verbatim): "no builds and changes without Unity Open, even if
+  you're using the CLI."** Script changes and builds happen with the editor
+  open and aware of them; no headless side-channel operations that leave an
+  open editor out of sync.
 - Never edit C# while a play/MPPM session is active (recompile kills it).
-- Build via CLI with editors closed (`Unity.exe -batchmode -quit -projectPath
-  "E:\src\Unity\6000.5\MRMTTT" -buildWindows64Player ".\Builds\Win1\MRMTTT.exe"`)
-  or the editor's own Build menu — not via the MCP bridge into a live editor
-  (that is what wedged the pipeline).
-- After any external file edit, confirm the assembly timestamp advanced.
+- After any file edit, confirm the editor imported and recompiled it:
+  `Library/ScriptAssemblies` newer than the newest source edit — before any
+  play test or build.
+- Builds through the open editor (Build menu), not via the MCP bridge into a
+  live editor mid-session (that is what wedged the pipeline).
 
 ## Phase status vs the approved plan
 
