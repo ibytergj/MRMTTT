@@ -123,6 +123,13 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
                     m_TableTop.SetLayoutConfig(m_Config);
                 m_TableTop.SetSeatLayout(seatCount);
                 m_SeatSystem.SetTableScale(scale);
+
+                // Only offer seats that exist in the current layout.
+                for (int i = 0; i < m_SeatButtons.Length; i++)
+                {
+                    if (m_SeatButtons[i] != null)
+                        m_SeatButtons[i].gameObject.SetActive(i < seatCount);
+                }
             }
 
             if (animate && changed && m_PlayerRepositionManager != null)

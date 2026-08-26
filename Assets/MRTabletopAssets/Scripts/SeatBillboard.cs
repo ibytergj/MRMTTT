@@ -47,9 +47,12 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             float scale = m_SeatSystem != null ? m_SeatSystem.tableScale : 1f;
             var seatRotation = Quaternion.Euler(0f, yaw, 0f);
 
+            // Only the radial (z) offset scales with the table: the UI moves
+            // out to the bigger table edge, but lateral (x) spacing stays
+            // authored — the player's reach does not grow with the table.
             transform.localRotation = seatRotation;
             transform.localPosition = seatRotation * new Vector3(
-                m_BaseLocalPosition.x * scale,
+                m_BaseLocalPosition.x,
                 m_BaseLocalPosition.y,
                 m_BaseLocalPosition.z * scale);
 
@@ -57,7 +60,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             for (int i = 0; i < count; i++)
             {
                 var basePosition = m_BaseChildLocalPositions[i];
-                transform.GetChild(i).localPosition = new Vector3(basePosition.x * scale, basePosition.y, basePosition.z * scale);
+                transform.GetChild(i).localPosition = new Vector3(basePosition.x, basePosition.y, basePosition.z * scale);
             }
         }
 
