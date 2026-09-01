@@ -116,55 +116,6 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         {
             // Initialize seat button colors
             UpdateSeatButtonColors();
-
-            RepairSeatWiring();
-        }
-
-        /// <summary>
-        /// Self-repairs runtime wiring the serialized data cannot guarantee:
-        /// a join button whose persistent RequestSeat target does not resolve
-        /// (seen on the hand-added seat cards 5-8) gets a runtime listener,
-        /// and an empty world-space hover array is filled with this seat's
-        /// ring under the table's Hover Visuals root.
-        /// </summary>
-        void RepairSeatWiring()
-        {
-            if (m_IsSpectator)
-                return;
-
-            foreach (var button in GetComponentsInChildren<Button>(true))
-            {
-                for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
-                {
-                    if (button.onClick.GetPersistentMethodName(i) != "RequestSeat")
-                        continue;
-
-                    if (button.onClick.GetPersistentTarget(i) == null)
-                    {
-                        var manager = FindAnyObjectByType<NetworkTableTopManager>(FindObjectsInactive.Include);
-                        if (manager != null)
-                        {
-                            int seatID = m_SeatID;
-                            button.onClick.AddListener(() => manager.RequestSeat(seatID));
-                        }
-                    }
-                    break;
-                }
-            }
-
-            bool hasHoverObject = false;
-            if (m_WorldSpaceSeatHoverObjects != null)
-            {
-                foreach (var hoverObject in m_WorldSpaceSeatHoverObjects)
-                    hasHoverObject |= hoverObject != null;
-            }
-
-            if (!hasHoverObject)
-            {
-                var hoverVisual = SeatHoverVisual.ForSeat(m_SeatID);
-                if (hoverVisual != null)
-                    m_WorldSpaceSeatHoverObjects = new[] { hoverVisual.gameObject };
-            }
         }
 
         void OnEnable()

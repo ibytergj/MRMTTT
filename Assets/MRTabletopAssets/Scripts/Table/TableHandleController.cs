@@ -40,6 +40,15 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         float totalLength => m_RightAnchor - m_LeftAnchor;
 
+        // Table-scale support: the anchors (and the grip offsets under the
+        // handle centers) span the table edge, so they scale with the table.
+        TableSeatSystem m_TableSeatSystem;
+        float m_BaseLeftAnchor;
+        float m_BaseRightAnchor;
+        Transform[] m_ScaledHandleTransforms;
+        Vector3[] m_BaseHandleLocalPositions;
+        bool m_BaseAnchorsCached;
+
         // Flags to indicate hover and selection status
         bool m_RotationIsHovered = false;
         bool m_MoveIsHovered = false;
@@ -77,8 +86,70 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         readonly int m_BaseColorPropertyID = Shader.PropertyToID("_BaseColor");
         readonly int m_FresnelHighlightColorPropertyID = Shader.PropertyToID("_FresnelHighlightColor");
 
+        /// <summary>
+        /// Caches the authored anchor span and the local offsets of every
+        /// transform under the handle centers (the rotation grips carry the
+        /// bar half-length on their local x).
+        /// </summary>
+        void CacheBaseAnchors()
+        {
+            if (m_BaseAnchorsCached)
+                return;
+
+            m_BaseAnchorsCached = true;
+            m_BaseLeftAnchor = m_LeftAnchor;
+            m_BaseRightAnchor = m_RightAnchor;
+
+            var transforms = new List<Transform>();
+            foreach (var center in new[] { m_RotationHandleCenter, m_MoveHandleCenter })
+            {
+                if (center == null)
+                    continue;
+                foreach (var child in center.GetComponentsInChildren<Transform>(true))
+                {
+                    if (child != center)
+                        transforms.Add(child);
+                }
+            }
+
+            m_ScaledHandleTransforms = transforms.ToArray();
+            m_BaseHandleLocalPositions = new Vector3[m_ScaledHandleTransforms.Length];
+            for (int i = 0; i < m_ScaledHandleTransforms.Length; i++)
+                m_BaseHandleLocalPositions[i] = m_ScaledHandleTransforms[i].localPosition;
+        }
+
+        /// <summary>
+        /// Moves the bend/slide anchors and the grip offsets out to the
+        /// scaled table edge, so the capsule bends at the actual corners.
+        /// Absolute and idempotent.
+        /// </summary>
+        void ApplyTableScale(float scale)
+        {
+            CacheBaseAnchors();
+
+            m_LeftAnchor = m_BaseLeftAnchor * scale;
+            m_RightAnchor = m_BaseRightAnchor * scale;
+
+            for (int i = 0; i < m_ScaledHandleTransforms.Length; i++)
+            {
+                if (m_ScaledHandleTransforms[i] == null)
+                    continue;
+                var basePosition = m_BaseHandleLocalPositions[i];
+                m_ScaledHandleTransforms[i].localPosition = new Vector3(basePosition.x * scale, basePosition.y, basePosition.z);
+            }
+        }
+
         void OnEnable()
         {
+            CacheBaseAnchors();
+            if (m_TableSeatSystem == null)
+                m_TableSeatSystem = GetComponentInParent<TableSeatSystem>();
+            if (m_TableSeatSystem != null)
+            {
+                m_TableSeatSystem.tableScaleChanged += ApplyTableScale;
+                ApplyTableScale(m_TableSeatSystem.tableScale);
+            }
+
             // Start with the capsule visible at rest position
             m_ProceduralCapsule0.isVisible = true;
 
@@ -109,6 +180,9 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
         void OnDisable()
         {
+            if (m_TableSeatSystem != null)
+                m_TableSeatSystem.tableScaleChanged -= ApplyTableScale;
+
             // Reset the capsule to its initial state
             m_ProceduralCapsule0.isVisible = true;
 

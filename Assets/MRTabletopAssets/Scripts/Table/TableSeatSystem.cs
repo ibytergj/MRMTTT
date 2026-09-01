@@ -23,6 +23,9 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         /// <summary>The uniform scale last applied to the table roots.</summary>
         public float tableScale { get; private set; } = 1f;
 
+        /// <summary>Raised after <see cref="SetTableScale"/> applies a new scale.</summary>
+        public event System.Action<float> tableScaleChanged;
+
         XROrigin m_XROrigin;
 
         void Awake()
@@ -94,6 +97,7 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             }
 
             tableScale = scale;
+            tableScaleChanged?.Invoke(scale);
 
             if (m_XROrigin != null)
                 m_XROrigin.transform.position += seat.position - seatBefore;

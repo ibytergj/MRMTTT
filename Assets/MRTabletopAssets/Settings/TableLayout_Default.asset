@@ -22,15 +22,4 @@ MonoBehaviour:
     - 270
     - 90
     scale: 0
-  - seatCount: 8
-    yaws:
-    - 0
-    - 180
-    - 270
-    - 90
-    - 45
-    - 135
-    - 225
-    - 315
-    scale: 2
   m_BaseRadius: 0.75

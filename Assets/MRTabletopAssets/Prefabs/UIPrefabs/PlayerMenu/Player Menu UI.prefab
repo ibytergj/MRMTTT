@@ -18582,8 +18582,7 @@ MonoBehaviour:
   - {fileID: 4977866103983881316}
   - {fileID: 5877130063707940900}
   - {fileID: 2861716631949131286}
-  m_TotalContentWidth: 200
-  m_ButtonSpacing: 10
+  m_ButtonPitch: 50
 --- !u!1 &7299969408736123330
 GameObject:
   m_ObjectHideFlags: 0

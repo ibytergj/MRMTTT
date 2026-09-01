@@ -14,23 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.TableLayoutConfig
   m_SupportedSeatCounts: 030000000400000005000000060000000700000008000000
   m_CollapsePolicy: 1
-  m_Presets:
-  - seatCount: 4
-    yaws:
-    - 0
-    - 180
-    - 270
-    - 90
-    scale: 0
-  - seatCount: 8
-    yaws:
-    - 0
-    - 180
-    - 270
-    - 90
-    - 45
-    - 135
-    - 225
-    - 315
-    scale: 2
+  m_Presets: []
   m_BaseRadius: 0.75

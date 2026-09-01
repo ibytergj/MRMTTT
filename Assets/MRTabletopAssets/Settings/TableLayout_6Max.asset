@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 615f39323923b6d4dae3c2035671ac16, type: 3}
-  m_Name: TableLayout_4or8
+  m_Name: TableLayout_6Max
   m_EditorClassIdentifier: MRTTT::UnityEngine.XR.Templates.MRTTabletopAssets.TableLayoutConfig
-  m_SupportedSeatCounts: 0400000008000000
-  m_CollapsePolicy: 0
+  m_SupportedSeatCounts: 0400000006000000
+  m_CollapsePolicy: 1
   m_Presets:
   - seatCount: 4
     yaws:
@@ -22,15 +22,4 @@ MonoBehaviour:
     - 270
     - 90
     scale: 0
-  - seatCount: 8
-    yaws:
-    - 0
-    - 180
-    - 270
-    - 90
-    - 45
-    - 135
-    - 225
-    - 315
-    scale: 1.5
   m_BaseRadius: 0.75

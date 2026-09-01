@@ -24,10 +24,16 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
         Rigidbody m_Rigidbody;
 
         Vector3 m_InitialTableLocalPos;
+        Vector3[] m_BaseChildLocalPositions;
+        Vector3 m_BaseVisualScale;
 
         void Awake()
         {
             m_InitialTableLocalPos = transform.localPosition;
+            m_BaseChildLocalPositions = new Vector3[transform.childCount];
+            for (int i = 0; i < m_BaseChildLocalPositions.Length; i++)
+                m_BaseChildLocalPositions[i] = transform.GetChild(i).localPosition;
+            m_BaseVisualScale = m_TableVisualsObject.transform.localScale;
         }
 
         protected virtual void Start()
@@ -44,14 +50,43 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
 
             m_GrabInteractable.firstSelectEntered.AddListener(StartSelection);
             m_GrabInteractable.lastSelectExited.AddListener(EndSelection);
+
+            if (m_TableSeatSystem != null)
+            {
+                m_TableSeatSystem.tableScaleChanged += ApplyTableScale;
+                ApplyTableScale(m_TableSeatSystem.tableScale);
+            }
         }
 
         void OnDestroy()
         {
+            if (m_TableSeatSystem != null)
+                m_TableSeatSystem.tableScaleChanged -= ApplyTableScale;
+
             if (m_GrabInteractable == null)
                 return;
             m_GrabInteractable.firstSelectEntered.RemoveListener(StartSelection);
             m_GrabInteractable.lastSelectExited.RemoveListener(EndSelection);
+        }
+
+        /// <summary>
+        /// Keeps the manipulator matched to the table size. Child offsets
+        /// carry the handle radius (Handles on the rotation manipulator, the
+        /// move visual's offset back to the table center on the free-move
+        /// one): their radial (z) offset scales with the table, like
+        /// SeatBillboard children. The move visual also shows the table
+        /// footprint, so its scale follows the table's uniform scale.
+        /// </summary>
+        void ApplyTableScale(float scale)
+        {
+            int count = Mathf.Min(transform.childCount, m_BaseChildLocalPositions.Length);
+            for (int i = 0; i < count; i++)
+            {
+                var basePosition = m_BaseChildLocalPositions[i];
+                transform.GetChild(i).localPosition = new Vector3(basePosition.x, basePosition.y, basePosition.z * scale);
+            }
+
+            m_TableVisualsObject.transform.localScale = m_BaseVisualScale * scale;
         }
 
         Matrix4x4 m_InitialTableTransform;
@@ -94,8 +129,13 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             // Update seat offset if needed
             UpdateSeatOffset();
 
-            // Reset the table's position and rotation
-            transform.localPosition = m_InitialTableLocalPos;
+            // Reset the table's position and rotation. The authored local
+            // position is a table-edge radius, so it scales with the table
+            // (the free-move manipulator sits at the edge; identity for the
+            // rotation manipulator, which sits at the center).
+            var resetPosition = m_InitialTableLocalPos;
+            resetPosition.z *= m_TableSeatSystem != null ? m_TableSeatSystem.tableScale : 1f;
+            transform.localPosition = resetPosition;
             transform.localRotation = Quaternion.identity;
 
             // Move rigitbody to match the transform

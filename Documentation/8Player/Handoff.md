@@ -50,11 +50,15 @@ Standing rules learned the hard way:
   order color push (must land TOGETHER with shader-side remap removal).
 - **Phase 3 (noise/dead code): NOT STARTED.** CS0618 Find* fixes,
   SeatButtonLayout deletion, Scripts/Shaders folder cleanup.
-- **Phase 4 (PR hygiene): NOT STARTED.** SeatButtonSpawner (replaces the
-  hand-cloned seat cards properly — the runtime self-repair in
-  TableTopSeatButton is an interim fix), hover visuals into prefab, delete
-  EightPlayerSceneMigration.cs + CreateTableLayoutAssets.cs +
-  EightPlayerWiring.cs, revert incidental churn, full diff review vs 8cca7cd.
+- **Phase 4 (PR hygiene): PARTIALLY REVISED (2026-08-26).** SeatButtonSpawner
+  is **dropped** (user decision): the corner cards' real defect was a missing
+  `m_Target` on their RequestSeat persistent calls — fixed by the user in the
+  scene, verified live (all 8 cards call `RequestSeat(seatID)` on
+  `NetworkTableTopManager`). The interim `RepairSeatWiring()` self-repair and
+  `SeatButtonLayout.EnsureButtonsAreVisible()` have been deleted accordingly.
+  Remaining: hover visuals into prefab, delete EightPlayerSceneMigration.cs +
+  CreateTableLayoutAssets.cs + EightPlayerWiring.cs, revert incidental churn,
+  full diff review vs 8cca7cd.
 - **Phase 5 (shader integration): NOT STARTED.**
 
 ## Validated live (4-then-5-player MPPM+build sessions, 08-25)

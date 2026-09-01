@@ -1,72 +1,65 @@
+using UnityEngine.UI;
+
 namespace UnityEngine.XR.Templates.MRTTabletopAssets
 {
     /// <summary>
-    /// Ensures the content panel is sized correctly for horizontal scrolling of seat buttons.
+    /// Sizes the seat-button scroll content to the current seat layout so the
+    /// horizontal scrollbar only appears when there are more seat cards than
+    /// fit the viewport. Follows <see cref="TableTop.seatLayoutChanged"/>;
+    /// seat card visibility itself is owned by NetworkTableTopManager.
     /// </summary>
     public class SeatButtonLayout : MonoBehaviour
     {
         [SerializeField] RectTransform m_ContentPanel;
+
+        // Wired by the scene migration; retained so re-running it stays valid.
         [SerializeField] TableTopSeatButton[] m_SeatButtons;
-        [SerializeField] float m_TotalContentWidth = 800f; // Set this to accommodate all buttons
-        [SerializeField] float m_ButtonSpacing = 10f; // Spacing between buttons
 
-        void Start()
-        {
-            EnsureButtonsAreVisible();
-            SetContentWidth();
-        }
+        [SerializeField, Tooltip("Horizontal distance between seat card origins; content width = pitch * seat count.")]
+        float m_ButtonPitch = 50f;
 
-        /// <summary>
-        /// Makes sure all seat buttons are active and visible.
-        /// </summary>
-        void EnsureButtonsAreVisible()
+        TableTop m_TableTop;
+        ScrollRect m_ScrollRect;
+
+        void OnEnable()
         {
-            // Make sure all buttons are active
-            foreach (var button in m_SeatButtons)
+            m_ScrollRect = GetComponentInParent<ScrollRect>(true);
+            m_TableTop = FindAnyObjectByType<TableTop>(FindObjectsInactive.Include);
+            if (m_TableTop != null)
             {
-                if (button != null)
-                    button.gameObject.SetActive(true);
+                m_TableTop.seatLayoutChanged += SetContentWidth;
+                SetContentWidth(m_TableTop.currentSeatCount);
             }
         }
 
-        /// <summary>
-        /// Sets the content panel width to accommodate all buttons.
-        /// </summary>
-        void SetContentWidth()
+        void OnDisable()
         {
-            // Set content width to accommodate all buttons
-            if (m_ContentPanel != null)
+            if (m_TableTop != null)
+                m_TableTop.seatLayoutChanged -= SetContentWidth;
+        }
+
+        /// <summary>
+        /// Sets the content panel width to fit the seat cards of the current
+        /// layout, and rewinds the scroll position when everything fits.
+        /// </summary>
+        void SetContentWidth(int seatCount)
+        {
+            if (m_ContentPanel == null)
+                return;
+
+            // Collapse the horizontal anchors to the left edge so sizeDelta.x
+            // is the absolute content width (with stretched anchors it would
+            // only be extra width on top of the viewport's).
+            m_ContentPanel.anchorMin = new Vector2(0f, m_ContentPanel.anchorMin.y);
+            m_ContentPanel.anchorMax = new Vector2(0f, m_ContentPanel.anchorMax.y);
+
+            float width = m_ButtonPitch * seatCount;
+            m_ContentPanel.sizeDelta = new Vector2(width, m_ContentPanel.sizeDelta.y);
+
+            if (m_ScrollRect != null && m_ScrollRect.viewport != null &&
+                width <= m_ScrollRect.viewport.rect.width)
             {
-                // If m_TotalContentWidth is set to 0, calculate it based on buttons
-                if (m_TotalContentWidth <= 0 && m_SeatButtons.Length > 0)
-                {
-                    float buttonWidth = 0;
-
-                    // Get the width of the first button
-                    if (m_SeatButtons[0] != null)
-                    {
-                        RectTransform buttonRect = m_SeatButtons[0].GetComponent<RectTransform>();
-                        if (buttonRect != null)
-                        {
-                            buttonWidth = buttonRect.rect.width;
-                        }
-                    }
-
-                    // Calculate total width needed
-                    if (buttonWidth > 0)
-                    {
-                        m_TotalContentWidth = (buttonWidth * m_SeatButtons.Length) +
-                                             (m_ButtonSpacing * (m_SeatButtons.Length - 1));
-                    }
-                    else
-                    {
-                        // Default width if button width couldn't be determined
-                        m_TotalContentWidth = 800f;
-                    }
-                }
-
-                // Set the content panel width
-                m_ContentPanel.sizeDelta = new Vector2(m_TotalContentWidth, m_ContentPanel.sizeDelta.y);
+                m_ScrollRect.horizontalNormalizedPosition = 0f;
             }
         }
     }

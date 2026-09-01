@@ -78,8 +78,12 @@ namespace UnityEngine.XR.Templates.MRTTabletopAssets
             m_SeatCount.OnValueChanged -= OnSeatCountChanged;
 
             // Reset the layout so the next session starts from the base table.
-            m_SeatSystem.SetTableScale(1f);
-            m_TableTop.SetSeatLayout(MinimumSeatCount());
+            // Scale comes from the config, not a literal 1: a config whose
+            // minimum is not 4 (e.g. a 3-seat table) has a base scale of its
+            // own, and count and scale must agree.
+            int minimumSeats = MinimumSeatCount();
+            m_SeatSystem.SetTableScale(m_Config != null ? m_Config.ScaleFor(minimumSeats) : 1f);
+            m_TableTop.SetSeatLayout(minimumSeats);
 
             foreach (var seatButton in m_SeatButtons)
             {
