@@ -17,7 +17,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2446
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -57,11 +57,12 @@ Material:
     - _Outer_Stroke_Corner_Radius: 0.06
     - _OutsideTransparency: 0.5
     - _PatternIntensity: 0.5
-    - _QueueControl: 0
-    - _QueueOffset: 0
+    - _QueueControl: 1
+    - _QueueOffset: -4
     - _ShapeSides: 4
     - _TableTopTransparency: 0.5
     - _Time: 0
+    - _XRMotionVectorsPass: 1
     m_Colors:
     - _ActivePlayerGlowColor: {r: 1, g: 1, b: 1, a: 0}
     - _Inner_Square_Fill: {r: 0.11320745, g: 0.11320745, b: 0.11320745, a: 0}
